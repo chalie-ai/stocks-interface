@@ -22,8 +22,8 @@
  * @module stocks-interface/capabilities/stock-quote
  */
 
-import type { FinnhubClient } from "../finnhub/client.js";
-import type { ToolState } from "../finnhub/types.js";
+import type { FinnhubClient } from "../finnhub/client.ts";
+import type { ToolState } from "../finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Exported types

@@ -8,18 +8,18 @@
  * earnings_calendar.
  */
 
-export { handleStockQuote } from "./stock-quote.js";
-export type { CapabilityResult } from "./stock-quote.js";
-export { handleStockCompare } from "./stock-compare.js";
-export { handleStockHistory } from "./stock-history.js";
-export type { HistoryPeriod } from "./stock-history.js";
-export { handleStockNews } from "./stock-news.js";
-export { handleMarketStatus, handleEarningsCalendar } from "./market-status.js";
-export { handleWatchlistAdd } from "./watchlist-add.js";
-export { handleWatchlistRemove } from "./watchlist-remove.js";
+export { handleStockQuote } from "./stock-quote.ts";
+export type { CapabilityResult } from "./stock-quote.ts";
+export { handleStockCompare } from "./stock-compare.ts";
+export { handleStockHistory } from "./stock-history.ts";
+export type { HistoryPeriod } from "./stock-history.ts";
+export { handleStockNews } from "./stock-news.ts";
+export { handleMarketStatus, handleEarningsCalendar } from "./market-status.ts";
+export { handleWatchlistAdd } from "./watchlist-add.ts";
+export { handleWatchlistRemove } from "./watchlist-remove.ts";
 export {
   handleAlertSet,
   handleAlertList,
   handleAlertDelete,
-} from "./alert-set.js";
-export type { AlertSetParams, AlertDeleteParams } from "./alert-set.js";
+} from "./alert-set.ts";
+export type { AlertSetParams, AlertDeleteParams } from "./alert-set.ts";

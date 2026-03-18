@@ -28,8 +28,8 @@
  * @module stocks-interface/capabilities/stock-compare
  */
 
-import type { FinnhubClient } from "../finnhub/client.js";
-import type { BasicMetrics, Quote, ToolState } from "../finnhub/types.js";
+import type { FinnhubClient } from "../finnhub/client.ts";
+import type { BasicMetrics, Quote, ToolState } from "../finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Exported types
