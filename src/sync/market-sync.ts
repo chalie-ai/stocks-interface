@@ -33,13 +33,13 @@
  * @module stocks-interface/sync/market-sync
  */
 
-import type { FinnhubClient } from "../finnhub/client.js";
+import type { FinnhubClient } from "../finnhub/client.ts";
 import type {
   BasicMetrics,
   Quote,
   ToolState,
   WatchlistItem,
-} from "../finnhub/types.js";
+} from "../finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Constants

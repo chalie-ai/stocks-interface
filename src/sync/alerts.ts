@@ -29,8 +29,7 @@
  * @module stocks-interface/sync/alerts
  */
 
-import { randomUUID } from "node:crypto";
-import type { PriceAlert, Quote, ToolState } from "../finnhub/types.js";
+import type { PriceAlert, Quote, ToolState } from "../finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Exported types
@@ -244,7 +243,7 @@ export function createAlert(
   message = "",
 ): ToolState {
   const newAlert: PriceAlert = {
-    id: randomUUID(),
+    id: crypto.randomUUID(),
     symbol: symbol.toUpperCase(),
     targetPrice,
     direction,

@@ -6,17 +6,17 @@
  * interval, evaluating threshold conditions, and emitting Chalie signals.
  */
 
-export { MarketSync } from "./market-sync.js";
+export { MarketSync } from "./market-sync.ts";
 export type {
   Signal,
   OnSignalFn,
   OnSummaryFn,
   StopFn,
-} from "./market-sync.js";
+} from "./market-sync.ts";
 export {
   checkAlerts,
   createAlert,
   deleteAlert,
   formatAlertMessage,
-} from "./alerts.js";
-export type { CheckAlertsResult, TriggeredAlert } from "./alerts.js";
+} from "./alerts.ts";
+export type { CheckAlertsResult, TriggeredAlert } from "./alerts.ts";
