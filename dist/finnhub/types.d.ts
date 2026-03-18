@@ -393,6 +393,16 @@ export interface ToolState {
         /** Unix millisecond timestamp when this signal was emitted. */
         firedAt: number;
     }>;
+    /**
+     * User-configurable sync and notification preferences.
+     *
+     * Embedded directly in `ToolState` so a single JSON read/write covers both
+     * runtime state and user settings. All fields carry sensible defaults that
+     * are applied when creating a fresh state via {@link DEFAULT_STATE}.
+     *
+     * @see {@link Settings}
+     */
+    settings: Settings;
 }
 /**
  * User-configurable settings for the stocks-interface tool.
