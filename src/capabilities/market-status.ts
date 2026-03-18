@@ -28,9 +28,9 @@
  * @module stocks-interface/capabilities/market-status
  */
 
-import type { EarningsEntry, FinnhubClient } from "../finnhub/client.js";
-import type { Quote, ToolState } from "../finnhub/types.js";
-import type { CapabilityResult } from "./stock-quote.js";
+import type { EarningsEntry, FinnhubClient } from "../finnhub/client.ts";
+import type { Quote, ToolState } from "../finnhub/types.ts";
+import type { CapabilityResult } from "./stock-quote.ts";
 
 // ---------------------------------------------------------------------------
 // Constants

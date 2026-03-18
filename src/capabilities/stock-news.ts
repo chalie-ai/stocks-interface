@@ -24,9 +24,9 @@
  * @module stocks-interface/capabilities/stock-news
  */
 
-import type { FinnhubClient } from "../finnhub/client.js";
-import type { NewsItem, ToolState } from "../finnhub/types.js";
-import type { CapabilityResult } from "./stock-quote.js";
+import type { FinnhubClient } from "../finnhub/client.ts";
+import type { NewsItem, ToolState } from "../finnhub/types.ts";
+import type { CapabilityResult } from "./stock-quote.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
