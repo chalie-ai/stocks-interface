@@ -5,6 +5,7 @@
  * Includes the setup wizard, main market view, and watchlist management
  * UI components rendered via Chalie's terminal interface primitives.
  */
-export {};
-// TODO: export SetupWizard, MainView, WatchlistManager
+export { renderSetupPage, renderValidatingPage } from "./setup.js";
+export { DEFAULT_WATCHLIST, renderWatchlistSection, renderEmptyWatchlist, } from "./watchlist.js";
+// TODO: export MainView
 //# sourceMappingURL=index.js.map

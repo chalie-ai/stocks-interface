@@ -8,4 +8,10 @@
 
 export { renderSetupPage, renderValidatingPage } from "./setup.js";
 export type { SetupError } from "./setup.js";
-// TODO: export MainView, WatchlistManager
+export {
+  DEFAULT_WATCHLIST,
+  renderWatchlistSection,
+  renderEmptyWatchlist,
+} from "./watchlist.js";
+export type { WatchlistItem } from "./watchlist.js";
+// TODO: export MainView
