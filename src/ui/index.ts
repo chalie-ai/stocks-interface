@@ -14,4 +14,5 @@ export {
   renderEmptyWatchlist,
 } from "./watchlist.js";
 export type { WatchlistItem } from "./watchlist.js";
-// TODO: export MainView
+export { renderMainView } from "./main.js";
+export type { ViewState } from "./main.js";

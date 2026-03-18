@@ -7,5 +7,5 @@
  */
 export { renderSetupPage, renderValidatingPage } from "./setup.js";
 export { DEFAULT_WATCHLIST, renderWatchlistSection, renderEmptyWatchlist, } from "./watchlist.js";
-// TODO: export MainView
+export { renderMainView } from "./main.js";
 //# sourceMappingURL=index.js.map

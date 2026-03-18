@@ -9,4 +9,6 @@ export { renderSetupPage, renderValidatingPage } from "./setup.js";
 export type { SetupError } from "./setup.js";
 export { DEFAULT_WATCHLIST, renderWatchlistSection, renderEmptyWatchlist, } from "./watchlist.js";
 export type { WatchlistItem } from "./watchlist.js";
+export { renderMainView } from "./main.js";
+export type { ViewState } from "./main.js";
 //# sourceMappingURL=index.d.ts.map
