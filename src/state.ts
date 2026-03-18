@@ -4,12 +4,12 @@
  *
  * Provides atomic read/write helpers for {@link ToolState} backed by a JSON
  * file in a configurable data directory. The atomic write pattern (write to a
- * `.tmp` file then `fs.rename`) prevents partial-write corruption on process
+ * `.tmp` file then `Deno.rename`) prevents partial-write corruption on process
  * crash or power loss.
  *
  * Usage:
  * ```ts
- * import { loadState, saveState, getDataDir, DEFAULT_STATE } from "./state.js";
+ * import { loadState, saveState, getDataDir, DEFAULT_STATE } from "./state.ts";
  *
  * const dir   = getDataDir();
  * const state = await loadState(dir);
@@ -20,10 +20,8 @@
  * @module stocks-interface/state
  */
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import os from "node:os";
-import type { ToolState } from "./finnhub/types.js";
+import { join } from "jsr:@std/path";
+import type { ToolState } from "./finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -89,10 +87,10 @@ export const DEFAULT_STATE: ToolState = {
  *
  * Resolution order:
  * 1. `STOCKS_DATA_DIR` environment variable (if set and non-empty).
- * 2. `~/.chalie/stocks-interface/` (platform home directory via `os.homedir()`).
+ * 2. `~/.chalie/stocks-interface/` (platform home directory via `Deno.env.get("HOME")`).
  *
  * The returned path is **not** guaranteed to exist; callers that require the
- * directory to exist must create it with `fs.mkdir(..., { recursive: true })`.
+ * directory to exist must create it with `Deno.mkdir(..., { recursive: true })`.
  *
  * @returns Absolute path to the data directory.
  *
@@ -104,11 +102,13 @@ export const DEFAULT_STATE: ToolState = {
  * ```
  */
 export function getDataDir(): string {
-  const envValue = process.env["STOCKS_DATA_DIR"];
+  const envValue = Deno.env.get("STOCKS_DATA_DIR");
   if (envValue !== undefined && envValue.length > 0) {
     return envValue;
   }
-  return path.join(os.homedir(), ".chalie", "stocks-interface");
+  const home =
+    Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "/";
+  return join(home, ".chalie", "stocks-interface");
 }
 
 // ---------------------------------------------------------------------------
@@ -138,13 +138,13 @@ export function getDataDir(): string {
  * ```
  */
 export async function loadState(dataDir: string): Promise<ToolState> {
-  const filePath = path.join(dataDir, STATE_FILENAME);
+  const filePath = join(dataDir, STATE_FILENAME);
 
   let raw: string;
   try {
-    raw = await fs.readFile(filePath, "utf8");
+    raw = await Deno.readTextFile(filePath);
   } catch (err) {
-    if (isNodeError(err) && err.code === "ENOENT") {
+    if (err instanceof Deno.errors.NotFound) {
       // First run — state file does not yet exist.
       return structuredClone(DEFAULT_STATE);
     }
@@ -226,37 +226,17 @@ export async function saveState(
   state: ToolState,
 ): Promise<void> {
   // 1. Ensure the directory exists.
-  await fs.mkdir(dataDir, { recursive: true });
+  await Deno.mkdir(dataDir, { recursive: true });
 
-  const realPath = path.join(dataDir, STATE_FILENAME);
+  const realPath = join(dataDir, STATE_FILENAME);
   const tmpPath = realPath + TMP_SUFFIX;
 
   // 2. Serialise — pretty-print for human readability during debugging.
   const json = JSON.stringify(state, null, 2);
 
   // 3. Write to tmp file.
-  await fs.writeFile(tmpPath, json, "utf8");
+  await Deno.writeTextFile(tmpPath, json);
 
   // 4. Atomic rename tmp → real.
-  await fs.rename(tmpPath, realPath);
-}
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Type guard that narrows `unknown` to a Node.js `ErrnoException` so callers
- * can safely access `.code` without an unsafe cast.
- *
- * @param err - The value to test.
- * @returns `true` if `err` is a non-null object with a `code` string property.
- */
-function isNodeError(err: unknown): err is NodeJS.ErrnoException {
-  return (
-    err !== null &&
-    typeof err === "object" &&
-    "code" in err &&
-    typeof (err as Record<string, unknown>)["code"] === "string"
-  );
+  await Deno.rename(tmpPath, realPath);
 }
