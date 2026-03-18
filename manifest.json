@@ -1,0 +1,99 @@
+{
+  "name": "stocks-interface",
+  "description": "Real-time stock market data, watchlist management, and price alerts powered by Finnhub.",
+  "version": "0.1.0",
+  "category": "integration",
+  "icon": "fa-chart-line",
+
+  "trigger": {
+    "type": "on_demand"
+  },
+
+  "parameters": {
+    "capability": {
+      "type": "string",
+      "description": "The capability to invoke",
+      "required": true
+    },
+    "symbol": {
+      "type": "string",
+      "description": "Stock ticker symbol (e.g. AAPL, TSLA, SPY)",
+      "required": false
+    },
+    "symbols": {
+      "type": "string",
+      "description": "Comma-separated list of ticker symbols for multi-stock comparison (e.g. AAPL,MSFT,GOOGL)",
+      "required": false
+    },
+    "period": {
+      "type": "string",
+      "description": "Historical data period — one of: 7d, 30d, 90d, 1y, ytd",
+      "required": false
+    },
+    "targetPrice": {
+      "type": "float",
+      "description": "Target price level for a price alert",
+      "required": false
+    },
+    "direction": {
+      "type": "string",
+      "description": "Alert trigger direction — one of: above, below",
+      "required": false
+    },
+    "alertId": {
+      "type": "string",
+      "description": "Unique identifier of a price alert to retrieve or delete",
+      "required": false
+    },
+    "daysAhead": {
+      "type": "integer",
+      "description": "Number of calendar days ahead to look for earnings events",
+      "required": false
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Maximum number of results to return (e.g. news articles)",
+      "required": false
+    },
+    "type": {
+      "type": "string",
+      "description": "Symbol type hint for watchlist-add — one of: stock, etf, index",
+      "required": false
+    },
+    "message": {
+      "type": "string",
+      "description": "Optional custom note to attach to a price alert",
+      "required": false
+    }
+  },
+
+  "returns": {
+    "text": { "type": "string" },
+    "html": { "type": "string" }
+  },
+
+  "output": {
+    "synthesize": false,
+    "card": {
+      "enabled": true,
+      "title": "Market Data",
+      "accent_color": "#00c853"
+    }
+  },
+
+  "constraints": {
+    "timeout_seconds": 15
+  },
+
+  "sandbox": {
+    "network": "bridge"
+  },
+
+  "config_schema": {
+    "apiKey": {
+      "description": "Finnhub API key from finnhub.io",
+      "secret": true,
+      "required": true
+    }
+  }
+}
