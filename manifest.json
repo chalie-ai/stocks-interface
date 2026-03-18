@@ -54,6 +54,16 @@
       "type": "integer",
       "description": "Maximum number of results to return (e.g. news articles)",
       "required": false
+    },
+    "type": {
+      "type": "string",
+      "description": "Symbol type hint for watchlist-add — one of: stock, etf, index",
+      "required": false
+    },
+    "message": {
+      "type": "string",
+      "description": "Optional custom note to attach to a price alert",
+      "required": false
     }
   },
 
