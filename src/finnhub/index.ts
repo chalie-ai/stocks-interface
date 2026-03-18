@@ -11,9 +11,9 @@ export {
   FinnhubAuthError,
   FinnhubNetworkError,
   FinnhubApiError,
-} from "./client.js";
-export type { MetricsCacheEntry } from "./client.js";
-export { RateLimiter, createRateLimiter } from "./rate-limiter.js";
+} from "./client.ts";
+export type { MetricsCacheEntry } from "./client.ts";
+export { RateLimiter, createRateLimiter } from "./rate-limiter.ts";
 export type {
   Quote,
   BasicMetrics,
@@ -25,4 +25,4 @@ export type {
   PriceAlert,
   ToolState,
   Settings,
-} from "./types.js";
+} from "./types.ts";
