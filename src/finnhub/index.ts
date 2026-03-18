@@ -6,4 +6,23 @@
  * used throughout the stocks-interface tool.
  */
 
-// TODO: export FinnhubClient, types, and RateLimiter
+export {
+  FinnhubClient,
+  FinnhubAuthError,
+  FinnhubNetworkError,
+  FinnhubApiError,
+} from "./client.js";
+export type { MetricsCacheEntry } from "./client.js";
+export { RateLimiter, createRateLimiter } from "./rate-limiter.js";
+export type {
+  Quote,
+  BasicMetrics,
+  CompanyProfile,
+  MarketStatus,
+  CandleData,
+  NewsItem,
+  WatchlistItem,
+  PriceAlert,
+  ToolState,
+  Settings,
+} from "./types.js";
