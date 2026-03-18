@@ -5,6 +5,6 @@
  * The sync layer is responsible for polling Finnhub on a configurable
  * interval, evaluating threshold conditions, and emitting Chalie signals.
  */
-export {};
-// TODO: export MarketSync, AlertsManager
+export { MarketSync } from "./market-sync.js";
+// TODO: export AlertsManager
 //# sourceMappingURL=index.js.map

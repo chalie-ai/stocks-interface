@@ -13,4 +13,10 @@ export type {
   OnSummaryFn,
   StopFn,
 } from "./market-sync.js";
-// TODO: export AlertsManager
+export {
+  checkAlerts,
+  createAlert,
+  deleteAlert,
+  formatAlertMessage,
+} from "./alerts.js";
+export type { CheckAlertsResult, TriggeredAlert } from "./alerts.js";
