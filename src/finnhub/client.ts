@@ -26,10 +26,8 @@
  * @module stocks-interface/finnhub/client
  */
 
-import axios from "axios";
-import type { AxiosInstance } from "axios";
-import { createRateLimiter } from "./rate-limiter.js";
-import type { RateLimiter } from "./rate-limiter.js";
+import { createRateLimiter } from "./rate-limiter.ts";
+import type { RateLimiter } from "./rate-limiter.ts";
 import type {
   BasicMetrics,
   CandleData,
@@ -37,7 +35,7 @@ import type {
   MarketStatus,
   NewsItem,
   Quote,
-} from "./types.js";
+} from "./types.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -446,15 +444,26 @@ export class FinnhubClient {
    */
   public readonly metricsCache: Map<string, MetricsCacheEntry>;
 
-  /** Configured axios instance with `baseURL` and `token` param pre-set. */
-  private readonly http: AxiosInstance;
+  /**
+   * Finnhub REST API base URL used to construct every request URL.
+   * Stored as a field so it participates in the same construction path as
+   * `apiKey` and can be overridden in tests via constructor injection.
+   */
+  private readonly baseUrl: string;
+
+  /**
+   * Finnhub API key appended as the `token` query parameter on every request.
+   * Stored here rather than re-read from settings on each call to keep the
+   * HTTP layer stateless with respect to settings mutations during a session.
+   */
+  private readonly apiKey: string;
 
   /** Shared rate limiter; defaults to a fresh instance if not supplied. */
   private readonly rateLimiter: RateLimiter;
 
   /**
    * Constructs a new {@link FinnhubClient} with clean caches and a configured
-   * axios instance.
+   * native-fetch HTTP layer.
    *
    * @param apiKey      - Finnhub API key used as the `token` query parameter
    *                      on every outbound request.
@@ -467,11 +476,8 @@ export class FinnhubClient {
     this.profileCache = new Map();
     this.metricsCache = new Map();
     this.rateLimiter = rateLimiter ?? createRateLimiter();
-    this.http = axios.create({
-      baseURL: FINNHUB_BASE_URL,
-      // Attach the API key to every request via the `token` query param.
-      params: { token: apiKey },
-    });
+    this.baseUrl = FINNHUB_BASE_URL;
+    this.apiKey = apiKey;
   }
 
   // -------------------------------------------------------------------------
@@ -479,22 +485,29 @@ export class FinnhubClient {
   // -------------------------------------------------------------------------
 
   /**
-   * Issues an authenticated GET request through the rate limiter.
+   * Issues an authenticated GET request through the rate limiter using the
+   * native `fetch` Web API.
    *
-   * Handles error classification:
-   * - HTTP 401 → {@link FinnhubAuthError}
-   * - No response (network error) → {@link FinnhubNetworkError}
-   * - Any other non-2xx status → {@link FinnhubApiError}
+   * Builds the full URL from `this.baseUrl + path`, appends `token` and all
+   * `params` entries as `URLSearchParams`, then delegates to `fetch()`.
+   *
+   * Error classification:
+   * - `fetch()` throws `TypeError` (DNS failure, connection refused, timeout)
+   *   → {@link FinnhubNetworkError}
+   * - HTTP 401 response → {@link FinnhubAuthError}
+   * - Any other non-2xx HTTP response → {@link FinnhubApiError}
+   * - Any other thrown value (neither `TypeError` nor a bad status) is
+   *   re-thrown unchanged so higher-level error boundaries can handle it.
    *
    * @template T - Expected parsed response body type.
    * @param path     - API path relative to {@link FINNHUB_BASE_URL}
    *                   (e.g. `"/quote"`). Must start with `"/"`.
-   * @param params   - Additional query parameters merged with the global `token`
+   * @param params   - Additional query parameters merged with the `token`
    *                   param (e.g. `{ symbol: "AAPL" }`).
    * @param priority - Rate-limiter priority tier (1–4; lower = higher urgency).
    * @returns        Parsed JSON response body typed as `T`.
    * @throws {FinnhubAuthError}    On HTTP 401.
-   * @throws {FinnhubNetworkError} When no HTTP response is received.
+   * @throws {FinnhubNetworkError} When `fetch()` rejects (network-layer error).
    * @throws {FinnhubApiError}     On any other non-2xx response.
    */
   private async get<T>(
@@ -503,30 +516,39 @@ export class FinnhubClient {
     priority: number,
   ): Promise<T> {
     return this.rateLimiter.enqueue(async () => {
+      // Build the full request URL with the API token and caller-supplied params.
+      const url = new URL(this.baseUrl + path);
+      url.searchParams.set("token", this.apiKey);
+      for (const [key, value] of Object.entries(params)) {
+        url.searchParams.set(key, value);
+      }
+
+      let response: Response;
       try {
-        const response = await this.http.get<T>(path, { params });
-        return response.data;
+        response = await fetch(url.toString());
       } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-          if (!err.response) {
-            // Network-layer failure: no HTTP response was received.
-            throw new FinnhubNetworkError(
-              `Network error calling Finnhub ${path}: ${err.message}`,
-            );
-          }
-
-          if (err.response.status === 401) {
-            throw new FinnhubAuthError();
-          }
-
-          throw new FinnhubApiError(
-            err.response.status,
-            `Finnhub API error (${err.response.status}) on ${path}`,
+        // fetch() rejects with TypeError for network-layer failures
+        // (DNS lookup failure, connection refused, timeout, etc.).
+        if (err instanceof TypeError) {
+          throw new FinnhubNetworkError(
+            `Network error calling Finnhub ${path}: ${err.message}`,
           );
         }
-        // Re-throw anything that is not an AxiosError unchanged.
+        // Re-throw anything that is not a network TypeError unchanged.
         throw err;
       }
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new FinnhubAuthError();
+        }
+        throw new FinnhubApiError(
+          response.status,
+          `Finnhub API error (${response.status}) on ${path}`,
+        );
+      }
+
+      return response.json() as Promise<T>;
     }, priority);
   }
 
