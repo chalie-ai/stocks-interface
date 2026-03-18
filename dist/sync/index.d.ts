@@ -7,4 +7,6 @@
  */
 export { MarketSync } from "./market-sync.js";
 export type { Signal, OnSignalFn, OnSummaryFn, StopFn, } from "./market-sync.js";
+export { checkAlerts, createAlert, deleteAlert, formatAlertMessage, } from "./alerts.js";
+export type { CheckAlertsResult, TriggeredAlert } from "./alerts.js";
 //# sourceMappingURL=index.d.ts.map

@@ -6,5 +6,5 @@
  * interval, evaluating threshold conditions, and emitting Chalie signals.
  */
 export { MarketSync } from "./market-sync.js";
-// TODO: export AlertsManager
+export { checkAlerts, createAlert, deleteAlert, formatAlertMessage, } from "./alerts.js";
 //# sourceMappingURL=index.js.map
