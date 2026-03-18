@@ -6,5 +6,7 @@
  * reasoning layer: stock_quote, stock_search, stock_compare, stock_history,
  * watchlist_add, watchlist_remove, set_alert, and market_overview.
  */
-export {};
+export { handleStockQuote } from "./stock-quote.js";
+export type { CapabilityResult } from "./stock-quote.js";
+export { handleStockCompare } from "./stock-compare.js";
 //# sourceMappingURL=index.d.ts.map
