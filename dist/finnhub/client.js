@@ -460,5 +460,74 @@ export class FinnhubClient {
             holiday: raw.holiday,
         };
     }
+    /**
+     * Fetches upcoming (and recent) earnings events from the Finnhub earnings
+     * calendar for a given date range.
+     *
+     * Calls `GET /calendar/earnings?from={from}&to={to}[&symbol={symbol}]`
+     * (priority tier 4 — background, deferrable).
+     *
+     * When `symbol` is supplied, Finnhub filters server-side to that ticker.
+     * When omitted, all symbols with scheduled earnings in the date range are
+     * returned (may be a large list on active weeks).
+     *
+     * Free-tier note: Finnhub's free tier provides basic earnings data
+     * (date, EPS estimate, report timing) but may omit revenue estimates and
+     * granular time-of-day details for some symbols.
+     *
+     * @param from   - Start of the date range in `YYYY-MM-DD` format (inclusive).
+     * @param to     - End of the date range in `YYYY-MM-DD` format (inclusive).
+     * @param symbol - Optional ticker to filter results server-side.
+     * @returns       Array of {@link EarningsEntry} objects sorted by ascending
+     *                date (Finnhub returns them in chronological order).
+     *                Returns an empty array when no events fall in the range.
+     * @throws {FinnhubAuthError}    On HTTP 401.
+     * @throws {FinnhubNetworkError} On network failure.
+     * @throws {FinnhubApiError}     On other API errors.
+     */
+    async earningsCalendar(from, to, symbol) {
+        const params = { from, to };
+        if (symbol !== undefined && symbol.length > 0) {
+            params["symbol"] = symbol;
+        }
+        const raw = await this.get("/calendar/earnings", params, 4);
+        return (raw.earningsCalendar ?? []).map((entry) => ({
+            symbol: entry.symbol,
+            date: entry.date,
+            epsEstimate: entry.epsEstimate,
+            epsActual: entry.epsActual,
+            reportTime: mapReportTime(entry.hour),
+            quarter: entry.quarter,
+            year: entry.year,
+        }));
+    }
+}
+// ---------------------------------------------------------------------------
+// Module-private helpers for FinnhubClient
+// ---------------------------------------------------------------------------
+/**
+ * Maps Finnhub's single-character earnings timing code to the typed
+ * {@link EarningsEntry.reportTime} union.
+ *
+ * Finnhub codes:
+ * - `"bmo"` — before market open
+ * - `"amc"` — after market close
+ * - `"dmh"` — during market hours
+ * - any other value (or empty string) → `"unknown"`
+ *
+ * @param hour - The raw `hour` string from the Finnhub earnings API.
+ * @returns      A typed `reportTime` value.
+ */
+function mapReportTime(hour) {
+    switch (hour) {
+        case "bmo":
+            return "before-open";
+        case "amc":
+            return "after-close";
+        case "dmh":
+            return "during-hours";
+        default:
+            return "unknown";
+    }
 }
 //# sourceMappingURL=client.js.map

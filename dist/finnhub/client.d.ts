@@ -99,6 +99,45 @@ export declare class FinnhubApiError extends Error {
     constructor(status: number, message: string);
 }
 /**
+ * A single earnings calendar event, mapped from the Finnhub API response.
+ *
+ * Used by the `handleEarningsCalendar` capability to render upcoming
+ * earnings dates, estimated EPS, and pre/post-market timing.
+ *
+ * @see {@link FinnhubClient.earningsCalendar}
+ */
+export interface EarningsEntry {
+    /** Ticker symbol (e.g. `"AAPL"`). */
+    symbol: string;
+    /**
+     * Scheduled report date in `YYYY-MM-DD` format.
+     * Dates are in the company's local filing timezone (typically US).
+     */
+    date: string;
+    /**
+     * Consensus analyst EPS estimate for the period.
+     * `null` when Finnhub has no estimate on record.
+     */
+    epsEstimate: number | null;
+    /**
+     * Actual reported EPS for the period.
+     * `null` for future earnings that have not yet been reported.
+     */
+    epsActual: number | null;
+    /**
+     * Timing of the report relative to market trading hours.
+     * - `"before-open"` — released before the regular session opens (BMO)
+     * - `"after-close"` — released after the regular session closes (AMC)
+     * - `"during-hours"` — released during the trading session (DMH)
+     * - `"unknown"` — Finnhub did not specify a time
+     */
+    reportTime: "before-open" | "after-close" | "during-hours" | "unknown";
+    /** Fiscal quarter (1–4). */
+    quarter: number;
+    /** Fiscal year (e.g. `2024`). */
+    year: number;
+}
+/**
  * A stamped wrapper around a cached {@link BasicMetrics} value.
  *
  * `fetchedAt` is a Unix millisecond timestamp used to determine whether the
@@ -331,5 +370,31 @@ export declare class FinnhubClient {
      * @throws {FinnhubApiError}     On other API errors.
      */
     marketStatus(exchange?: string): Promise<MarketStatus>;
+    /**
+     * Fetches upcoming (and recent) earnings events from the Finnhub earnings
+     * calendar for a given date range.
+     *
+     * Calls `GET /calendar/earnings?from={from}&to={to}[&symbol={symbol}]`
+     * (priority tier 4 — background, deferrable).
+     *
+     * When `symbol` is supplied, Finnhub filters server-side to that ticker.
+     * When omitted, all symbols with scheduled earnings in the date range are
+     * returned (may be a large list on active weeks).
+     *
+     * Free-tier note: Finnhub's free tier provides basic earnings data
+     * (date, EPS estimate, report timing) but may omit revenue estimates and
+     * granular time-of-day details for some symbols.
+     *
+     * @param from   - Start of the date range in `YYYY-MM-DD` format (inclusive).
+     * @param to     - End of the date range in `YYYY-MM-DD` format (inclusive).
+     * @param symbol - Optional ticker to filter results server-side.
+     * @returns       Array of {@link EarningsEntry} objects sorted by ascending
+     *                date (Finnhub returns them in chronological order).
+     *                Returns an empty array when no events fall in the range.
+     * @throws {FinnhubAuthError}    On HTTP 401.
+     * @throws {FinnhubNetworkError} On network failure.
+     * @throws {FinnhubApiError}     On other API errors.
+     */
+    earningsCalendar(from: string, to: string, symbol?: string): Promise<EarningsEntry[]>;
 }
 //# sourceMappingURL=client.d.ts.map
