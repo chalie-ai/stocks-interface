@@ -14,4 +14,6 @@ export { handleStockHistory } from "./stock-history.js";
 export type { HistoryPeriod } from "./stock-history.js";
 export { handleStockNews } from "./stock-news.js";
 export { handleMarketStatus, handleEarningsCalendar } from "./market-status.js";
+export { handleWatchlistAdd } from "./watchlist-add.js";
+export { handleWatchlistRemove } from "./watchlist-remove.js";
 //# sourceMappingURL=index.d.ts.map
