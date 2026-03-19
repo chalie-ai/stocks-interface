@@ -9,7 +9,7 @@
  */
 
 export { handleStockQuote } from "./stock-quote.ts";
-export type { CapabilityResult } from "./stock-quote.ts";
+export type { CapabilityResult } from "../utils.ts";
 export { handleStockCompare } from "./stock-compare.ts";
 export { handleStockHistory } from "./stock-history.ts";
 export type { HistoryPeriod } from "./stock-history.ts";

@@ -30,32 +30,8 @@
 
 import type { FinnhubClient } from "../finnhub/client.ts";
 import type { BasicMetrics, Quote, ToolState } from "../finnhub/types.ts";
-
-// ---------------------------------------------------------------------------
-// Exported types
-// ---------------------------------------------------------------------------
-
-/**
- * The result returned by every capability handler in this tool.
- *
- * Both `text` and `html` representations are always populated on success so
- * Chalie can choose the best rendering surface. `error` is set only when the
- * handler could not fully complete the request.
- */
-export interface CapabilityResult {
-  /** Plain-text summary suitable for Chalie's reasoning context. */
-  text: string;
-  /**
-   * Inline-CSS HTML card for rich rendering in the Chalie UI.
-   * Never contains `<script>` tags.
-   */
-  html: string;
-  /**
-   * Human-readable error message when the handler failed or produced only
-   * partial results. Absent when all symbols were resolved successfully.
-   */
-  error?: string;
-}
+import { escapeHtml } from "../utils.ts";
+import type { CapabilityResult } from "../utils.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -162,22 +138,6 @@ function resolveBadge(
     return { label: "Live", background: "#dcfce7", color: "#15803d" };
   }
   return { label: "Delayed", background: "#fef9c3", color: "#92400e" };
-}
-
-/**
- * Escapes a string for safe interpolation into an HTML attribute or text node,
- * preventing XSS when symbol names or server-sourced strings are rendered.
- *
- * @param str - Raw string to escape.
- * @returns HTML-safe string with `&`, `<`, `>`, `"`, and `'` replaced.
- */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 // ---------------------------------------------------------------------------

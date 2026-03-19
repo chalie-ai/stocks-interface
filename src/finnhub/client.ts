@@ -56,28 +56,27 @@ const DAILY_CACHE_TTL_MS = 24 * 60 * 60 * 1_000;
 // ---------------------------------------------------------------------------
 
 /**
+ * Base class for all Finnhub API errors.
+ *
+ * Allows callers to catch all Finnhub-specific errors with a single
+ * `instanceof FinnhubError` check, while still supporting narrow catches
+ * via the concrete subclasses.
+ */
+export class FinnhubError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "FinnhubError";
+  }
+}
+
+/**
  * Thrown when Finnhub responds with HTTP 401 (invalid or missing API key).
  *
  * The caller should surface this to the user with a message like
  * "This API key doesn't seem to work — please double-check you copied the
  * full key."
- *
- * @example
- * ```ts
- * try {
- *   await client.quote("AAPL");
- * } catch (err) {
- *   if (err instanceof FinnhubAuthError) {
- *     showSetupWizard("Invalid API key");
- *   }
- * }
- * ```
  */
-export class FinnhubAuthError extends Error {
-  /**
-   * @param message - Human-readable description; defaults to a standard
-   *   "invalid API key" message.
-   */
+export class FinnhubAuthError extends FinnhubError {
   constructor(
     message = "Finnhub authentication failed. Please check your API key.",
   ) {
@@ -89,24 +88,8 @@ export class FinnhubAuthError extends Error {
 /**
  * Thrown when a request to Finnhub fails at the network layer (DNS failure,
  * connection refused, timeout, etc.) before a response is received.
- *
- * The caller should distinguish this from {@link FinnhubAuthError} and show
- * a message like "Couldn't connect to Finnhub — please check your internet
- * connection."
- *
- * @example
- * ```ts
- * } catch (err) {
- *   if (err instanceof FinnhubNetworkError) {
- *     showBanner("No network — showing last-known data");
- *   }
- * }
- * ```
  */
-export class FinnhubNetworkError extends Error {
-  /**
-   * @param message - Human-readable description of the network failure.
-   */
+export class FinnhubNetworkError extends FinnhubError {
   constructor(message: string) {
     super(message);
     this.name = "FinnhubNetworkError";
@@ -118,21 +101,8 @@ export class FinnhubNetworkError extends Error {
  *
  * The `status` property carries the raw HTTP status code for caller-side
  * branching (e.g. to treat 500-range errors differently from 400-range ones).
- *
- * @example
- * ```ts
- * } catch (err) {
- *   if (err instanceof FinnhubApiError && err.status >= 500) {
- *     // Finnhub server-side issue — retry later
- *   }
- * }
- * ```
  */
-export class FinnhubApiError extends Error {
-  /**
-   * @param status  - The HTTP status code returned by Finnhub.
-   * @param message - Human-readable description of the error.
-   */
+export class FinnhubApiError extends FinnhubError {
   constructor(
     public readonly status: number,
     message: string,

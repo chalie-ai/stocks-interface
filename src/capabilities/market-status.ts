@@ -30,7 +30,8 @@
 
 import type { EarningsEntry, FinnhubClient } from "../finnhub/client.ts";
 import type { Quote, ToolState } from "../finnhub/types.ts";
-import type { CapabilityResult } from "./stock-quote.ts";
+import { escapeHtml } from "../utils.ts";
+import type { CapabilityResult } from "../utils.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -142,22 +143,6 @@ interface PhaseBadge {
  */
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
-}
-
-/**
- * Escapes a string for safe interpolation into an HTML attribute or text node.
- *
- * @param str - Raw string to escape.
- * @returns HTML-safe string with `&`, `<`, `>`, `"`, and `'` replaced by their
- *          named HTML entity equivalents.
- */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 /**

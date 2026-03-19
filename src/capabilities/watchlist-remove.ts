@@ -19,7 +19,8 @@
  */
 
 import type { ToolState } from "../finnhub/types.ts";
-import type { CapabilityResult } from "./stock-quote.ts";
+import { escapeHtml } from "../utils.ts";
+import type { CapabilityResult } from "../utils.ts";
 
 // ---------------------------------------------------------------------------
 // Exported handler
@@ -92,10 +93,18 @@ export function handleWatchlistRemove(
   };
 
   // ── Build success result ──────────────────────────────────────────────────
+  // Check whether active alerts reference the removed symbol.
+  const activeAlertsForSymbol = state.priceAlerts.filter(
+    (a) => a.active && a.symbol.toUpperCase() === symbol,
+  );
+
   const remainingCount = updatedWatchlist.length;
+  const alertNote = activeAlertsForSymbol.length > 0
+    ? ` Note: ${activeAlertsForSymbol.length} active alert${activeAlertsForSymbol.length !== 1 ? "s" : ""} for ${symbol} still exist — delete them separately if no longer needed.`
+    : "";
   const text =
     `Removed ${removedItem.symbol} (${removedItem.name}) from your watchlist. ` +
-    `${remainingCount} symbol${remainingCount !== 1 ? "s" : ""} remaining.`;
+    `${remainingCount} symbol${remainingCount !== 1 ? "s" : ""} remaining.${alertNote}`;
 
   const html = buildSuccessHtml(
     removedItem.symbol,
@@ -152,18 +161,3 @@ function buildSuccessHtml(
 </div>`.trim();
 }
 
-/**
- * Escapes a string for safe interpolation into an HTML text node or attribute.
- *
- * @param str - Raw string to escape.
- * @returns HTML-safe string with `&`, `<`, `>`, `"`, and `'` replaced by
- *   their named HTML entity equivalents.
- */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}

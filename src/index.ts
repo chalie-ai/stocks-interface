@@ -45,8 +45,10 @@
 import {
   FinnhubAuthError,
   FinnhubClient,
+  FinnhubError,
   FinnhubNetworkError,
 } from "./finnhub/client.ts";
+import { escapeHtml } from "./utils.ts";
 import { getDataDir, loadState, saveState } from "./state.ts";
 import { MarketSync } from "./sync/market-sync.ts";
 import type { StopFn } from "./sync/market-sync.ts";
@@ -518,13 +520,19 @@ async function main(): Promise<void> {
         text: err.message,
         html: renderSetupPage({ type: "network", message: err.message }),
       });
+    } else if (err instanceof FinnhubError) {
+      // Catch-all for other Finnhub API errors (e.g. 5xx, rate-limited).
+      writeOutput({
+        text: err.message,
+        html: renderSetupPage({ type: "service", message: err.message }),
+      });
     } else {
       const message = err instanceof Error ? err.message : String(err);
       writeOutput({
         text: `An unexpected error occurred: ${message}`,
         html: `<div style="padding:16px;color:#d32f2f;font-family:` +
           `-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">` +
-          `An unexpected error occurred: ${message}</div>`,
+          `An unexpected error occurred: ${escapeHtml(message)}</div>`,
         error: message,
       });
     }

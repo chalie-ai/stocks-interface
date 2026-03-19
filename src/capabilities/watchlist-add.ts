@@ -36,7 +36,8 @@
 import { FinnhubAuthError, FinnhubNetworkError } from "../finnhub/client.ts";
 import type { FinnhubClient } from "../finnhub/client.ts";
 import type { ToolState, WatchlistItem } from "../finnhub/types.ts";
-import type { CapabilityResult } from "./stock-quote.ts";
+import { escapeHtml } from "../utils.ts";
+import type { CapabilityResult } from "../utils.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -315,20 +316,4 @@ function buildSuccessHtml(
     </tbody>
   </table>
 </div>`.trim();
-}
-
-/**
- * Escapes a string for safe interpolation into an HTML text node or attribute.
- *
- * @param str - Raw string to escape.
- * @returns HTML-safe string with `&`, `<`, `>`, `"`, and `'` replaced by
- *   their named HTML entity equivalents.
- */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }

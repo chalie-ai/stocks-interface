@@ -24,33 +24,8 @@
 
 import type { FinnhubClient } from "../finnhub/client.ts";
 import type { ToolState } from "../finnhub/types.ts";
-
-// ---------------------------------------------------------------------------
-// Exported types
-// ---------------------------------------------------------------------------
-
-/**
- * The result returned by every capability handler in this tool.
- *
- * Both `text` and `html` representations are always populated on success so
- * Chalie can choose the best rendering surface. `error` is set only when the
- * handler could not complete the request.
- */
-export interface CapabilityResult {
-  /** Plain-text summary suitable for Chalie's reasoning context. */
-  text: string;
-  /**
-   * Inline-CSS HTML card for rich rendering in the Chalie UI.
-   * Never contains `<script>` tags.
-   */
-  html: string;
-  /**
-   * Human-readable error message when the handler failed.
-   * Absent on success. `text` and `html` will contain user-facing error copy
-   * even when this field is set.
-   */
-  error?: string;
-}
+import { escapeHtml } from "../utils.ts";
+import type { CapabilityResult } from "../utils.ts";
 
 // ---------------------------------------------------------------------------
 // Internal formatting helpers
@@ -291,24 +266,3 @@ export async function handleStockQuote(
   return { text, html };
 }
 
-// ---------------------------------------------------------------------------
-// Internal utility
-// ---------------------------------------------------------------------------
-
-/**
- * Escapes a string for safe interpolation into an HTML attribute or text node.
- * Prevents XSS when user-supplied symbol names or server responses are
- * rendered directly into the HTML card.
- *
- * @param str - Raw string to escape.
- * @returns HTML-safe string with `&`, `<`, `>`, `"`, and `'` replaced by
- *   their named entity equivalents.
- */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}

@@ -77,13 +77,21 @@ export class RateLimiter {
    * Number of requests dispatched in the current 60-second window.
    * Reset to zero when `Date.now() - windowStart ≥ WINDOW_MS`.
    */
-  requestsThisMinute: number;
+  private _requestsThisMinute: number;
 
   /**
    * Unix millisecond timestamp when the current counting window started.
    * Updated each time the window rolls over inside {@link refreshWindow}.
    */
-  windowStart: number;
+  private _windowStart: number;
+
+  /**
+   * Read-only accessor for the current request count within the active window.
+   * Exposed for observability and testing; callers cannot mutate the counter.
+   */
+  get requestsThisMinute(): number {
+    return this._requestsThisMinute;
+  }
 
   /** Sorted pending queue; lowest priority-number is at the front. */
   private readonly queue: QueueItem[];
@@ -125,8 +133,8 @@ export class RateLimiter {
    * directly, so that each logical context receives its own isolated instance.
    */
   constructor() {
-    this.requestsThisMinute = 0;
-    this.windowStart = Date.now();
+    this._requestsThisMinute = 0;
+    this._windowStart = Date.now();
     this.queue = [];
     this.lastLowPriorityDispatch = 0;
     this.drainTimer = null;
@@ -158,7 +166,7 @@ export class RateLimiter {
       // Priority-1 items are "immediate": skip the queue if there is capacity.
       if (priority === 1) {
         this.refreshWindow();
-        if (this.requestsThisMinute < RateLimiter.CEILING) {
+        if (this._requestsThisMinute < RateLimiter.CEILING) {
           this.dispatchItem({
             fn: () => fn() as Promise<unknown>,
             priority,
@@ -201,9 +209,9 @@ export class RateLimiter {
    */
   private refreshWindow(): void {
     const now = Date.now();
-    if (now - this.windowStart >= RateLimiter.WINDOW_MS) {
-      this.requestsThisMinute = 0;
-      this.windowStart = now;
+    if (now - this._windowStart >= RateLimiter.WINDOW_MS) {
+      this._requestsThisMinute = 0;
+      this._windowStart = now;
     }
   }
 
@@ -270,7 +278,7 @@ export class RateLimiter {
    * @param item The queue item to execute.
    */
   private dispatchItem(item: QueueItem): void {
-    this.requestsThisMinute++;
+    this._requestsThisMinute++;
 
     if (item.priority >= RateLimiter.LOW_PRIORITY_MIN) {
       this.lastLowPriorityDispatch = Date.now();
@@ -295,7 +303,7 @@ export class RateLimiter {
     this.refreshWindow();
 
     while (
-      this.queue.length > 0 && this.requestsThisMinute < RateLimiter.CEILING
+      this.queue.length > 0 && this._requestsThisMinute < RateLimiter.CEILING
     ) {
       const idx = this.findNextDispatchable();
       if (idx === -1) break; // All remaining items are blocked by stagger.
@@ -334,10 +342,10 @@ export class RateLimiter {
     let delay = delayMs;
 
     // Constraint 1: wait for the window to reset if the ceiling has been hit.
-    if (this.requestsThisMinute >= RateLimiter.CEILING) {
+    if (this._requestsThisMinute >= RateLimiter.CEILING) {
       const windowResetWait = Math.max(
         0,
-        this.windowStart + RateLimiter.WINDOW_MS - now,
+        this._windowStart + RateLimiter.WINDOW_MS - now,
       );
       delay = Math.max(delay, windowResetWait);
     }

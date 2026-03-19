@@ -32,7 +32,8 @@
 
 import type { FinnhubClient } from "../finnhub/client.ts";
 import type { ToolState } from "../finnhub/types.ts";
-import type { CapabilityResult } from "./stock-quote.ts";
+import { escapeHtml } from "../utils.ts";
+import type { CapabilityResult } from "../utils.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -194,22 +195,6 @@ function formatPrice(price: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-}
-
-/**
- * Escapes a string for safe interpolation into HTML attribute values and text
- * nodes, preventing XSS from server-sourced symbol names or error messages.
- *
- * @param str - Raw string to escape.
- * @returns HTML-safe string with `&`, `<`, `>`, `"`, and `'` entities encoded.
- */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 // ---------------------------------------------------------------------------
