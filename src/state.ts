@@ -106,8 +106,7 @@ export function getDataDir(): string {
   if (envValue !== undefined && envValue.length > 0) {
     return envValue;
   }
-  const home =
-    Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "/";
+  const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "/";
   return join(home, ".chalie", "stocks-interface");
 }
 

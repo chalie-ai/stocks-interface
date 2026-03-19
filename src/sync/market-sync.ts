@@ -40,6 +40,7 @@ import type {
   ToolState,
   WatchlistItem,
 } from "../finnhub/types.ts";
+import { checkAlerts, formatAlertMessage } from "./alerts.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -437,7 +438,9 @@ function evaluateStock(
   // ── 52-week milestones (independent of move tier) ─────────────────────────
   const metrics = getCachedMetrics(client, item.symbol);
   if (metrics !== null) {
-    if (metrics.fiftyTwoWeekHigh > 0 && quote.price >= metrics.fiftyTwoWeekHigh) {
+    if (
+      metrics.fiftyTwoWeekHigh > 0 && quote.price >= metrics.fiftyTwoWeekHigh
+    ) {
       const key = `${item.symbol}:stock_milestone:52wkhigh`;
       if (!isDuplicate(state, key)) {
         onSignal({
@@ -446,7 +449,9 @@ function evaluateStock(
           name: quote.name,
           energy: 0.55,
           content:
-            `${displayName} has hit a new 52-week high at ${fmt(quote.price)} ` +
+            `${displayName} has hit a new 52-week high at ${
+              fmt(quote.price)
+            } ` +
             `(previous high: ${fmt(metrics.fiftyTwoWeekHigh)}).`,
           topic: "stocks",
         });
@@ -693,7 +698,9 @@ export class MarketSync {
             quotes.push(result.value);
           } else {
             console.error(
-              `[market-sync] Failed to fetch quote for ${state.watchlist[i].symbol}:`,
+              `[market-sync] Failed to fetch quote for ${
+                state.watchlist[i].symbol
+              }:`,
               result.reason,
             );
           }
@@ -721,6 +728,34 @@ export class MarketSync {
           }
         }
 
+        // ── Step 5.5: Evaluate user price alerts ─────────────────────────────
+        //
+        // `checkAlerts` is a pure function — it returns the triggered alerts
+        // and an immutably updated state snapshot.  We merge the updated
+        // `priceAlerts` array back into the mutable `state` object and emit a
+        // `stock_alert` signal for every alert that crossed its threshold this
+        // cycle.
+        const { triggered, updatedState: alertState } = checkAlerts(
+          state,
+          quoteMap,
+        );
+        if (triggered.length > 0) {
+          state.priceAlerts = alertState.priceAlerts;
+          for (const alert of triggered) {
+            const alertQuote = quoteMap.get(alert.symbol);
+            if (alertQuote !== undefined) {
+              onSignal({
+                type: "stock_alert",
+                symbol: alert.symbol,
+                name: alertQuote.name ?? alert.symbol,
+                energy: 0.65,
+                content: formatAlertMessage(alert, alertQuote),
+                topic: "stocks",
+              });
+            }
+          }
+        }
+
         // ── Step 6: Market close summary ─────────────────────────────────────
         //
         // Fire `onSummary` when ALL of the following hold:
@@ -731,11 +766,11 @@ export class MarketSync {
         //     state (regular close detection).
         const todayStr = todayET(now);
         const isAfterClose = nowET.getHours() >= MARKET_CLOSE_HOUR_ET;
-        const summaryDue =
-          isAfterClose && state.lastMarketSummaryDate !== todayStr;
+        const summaryDue = isAfterClose &&
+          state.lastMarketSummaryDate !== todayStr;
 
-        const isTransitionFromOpen =
-          prevMarketState === "open" && newMarketState !== "open";
+        const isTransitionFromOpen = prevMarketState === "open" &&
+          newMarketState !== "open";
         const isDaemonStart = prevMarketState === null;
 
         if (summaryDue && (isTransitionFromOpen || isDaemonStart)) {
@@ -757,10 +792,9 @@ export class MarketSync {
 
       // ── Step 7: Schedule next cycle ──────────────────────────────────────
       if (!stopped) {
-        const interval =
-          state.lastKnownMarketState === "open"
-            ? state.settings.syncIntervalMarketOpen
-            : state.settings.syncIntervalMarketClosed;
+        const interval = state.lastKnownMarketState === "open"
+          ? state.settings.syncIntervalMarketOpen
+          : state.settings.syncIntervalMarketClosed;
 
         timer = setTimeout(() => {
           void runCycle();

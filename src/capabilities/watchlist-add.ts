@@ -33,10 +33,7 @@
  * @module stocks-interface/capabilities/watchlist-add
  */
 
-import {
-  FinnhubAuthError,
-  FinnhubNetworkError,
-} from "../finnhub/client.ts";
+import { FinnhubAuthError, FinnhubNetworkError } from "../finnhub/client.ts";
 import type { FinnhubClient } from "../finnhub/client.ts";
 import type { ToolState, WatchlistItem } from "../finnhub/types.ts";
 import type { CapabilityResult } from "./stock-quote.ts";
@@ -157,15 +154,14 @@ export async function handleWatchlistAdd(
 
   // ── Step 4: Determine isIndex and item type ──────────────────────────────
   const specifiedType = params.type;
-  const isIndex =
-    INDEX_ETF_PROXIES.has(symbol) ||
+  const isIndex = INDEX_ETF_PROXIES.has(symbol) ||
     specifiedType === "index" ||
     specifiedType === "etf";
 
   // Prefer the caller-supplied type; fall back to "etf" for index-proxies and
   // "stock" for everything else.
-  const itemType: WatchlistItem["type"] =
-    specifiedType ?? (isIndex ? "etf" : "stock");
+  const itemType: WatchlistItem["type"] = specifiedType ??
+    (isIndex ? "etf" : "stock");
 
   // ── Step 5: Resolve display name and exchange via companyProfile ──────────
   // companyProfile also populates profileCache as a side-effect, so future
@@ -210,12 +206,15 @@ export async function handleWatchlistAdd(
 
   // ── Step 8: Build success result ─────────────────────────────────────────
   const indexNote = isIndex ? " · index thresholds apply" : "";
-  const text =
-    `Added ${symbol} (${displayName}) to your watchlist. ` +
+  const text = `Added ${symbol} (${displayName}) to your watchlist. ` +
     `Type: ${itemType}${indexNote}. ` +
     `Watchlist now has ${updatedState.watchlist.length} of ${maxSize} slots used.`;
 
-  const html = buildSuccessHtml(newItem, updatedState.watchlist.length, maxSize);
+  const html = buildSuccessHtml(
+    newItem,
+    updatedState.watchlist.length,
+    maxSize,
+  );
 
   return { result: { text, html }, updatedState };
 }
@@ -293,15 +292,21 @@ function buildSuccessHtml(
     <tbody>
       <tr style="border-top:1px solid #f0fdf4">
         <td style="padding:5px 4px;color:#6b7280;width:120px">Name</td>
-        <td style="padding:5px 4px;font-weight:500">${escapeHtml(item.name)}</td>
+        <td style="padding:5px 4px;font-weight:500">${
+    escapeHtml(item.name)
+  }</td>
       </tr>
       <tr style="border-top:1px solid #f0fdf4">
         <td style="padding:5px 4px;color:#6b7280">Exchange</td>
-        <td style="padding:5px 4px;font-weight:500">${escapeHtml(item.exchange)}</td>
+        <td style="padding:5px 4px;font-weight:500">${
+    escapeHtml(item.exchange)
+  }</td>
       </tr>
       <tr style="border-top:1px solid #f0fdf4">
         <td style="padding:5px 4px;color:#6b7280">Type</td>
-        <td style="padding:5px 4px;font-weight:500">${escapeHtml(item.type)}${item.isIndex ? " · index thresholds" : ""}</td>
+        <td style="padding:5px 4px;font-weight:500">${escapeHtml(item.type)}${
+    item.isIndex ? " · index thresholds" : ""
+  }</td>
       </tr>
       <tr style="border-top:1px solid #f0fdf4">
         <td style="padding:5px 4px;color:#6b7280">Watchlist</td>

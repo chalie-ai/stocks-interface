@@ -10,8 +10,8 @@ export { renderSetupPage, renderValidatingPage } from "./setup.ts";
 export type { SetupError } from "./setup.ts";
 export {
   DEFAULT_WATCHLIST,
-  renderWatchlistSection,
   renderEmptyWatchlist,
+  renderWatchlistSection,
 } from "./watchlist.ts";
 export type { WatchlistItem } from "./watchlist.ts";
 export { renderMainView } from "./main.ts";

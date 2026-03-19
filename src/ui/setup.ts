@@ -78,21 +78,26 @@ const WARNING_COLOR = "#f57c00";
  * @returns `{ text, color }` where `text` is the sentence shown in the banner
  *   and `color` is a CSS colour string.
  */
-function resolveErrorDisplay(error: SetupError): { text: string; color: string } {
+function resolveErrorDisplay(
+  error: SetupError,
+): { text: string; color: string } {
   switch (error.type) {
     case "auth":
       return {
-        text: "This API key doesn't seem to work. Please double-check you copied the full key.",
+        text:
+          "This API key doesn't seem to work. Please double-check you copied the full key.",
         color: ERROR_COLOR,
       };
     case "network":
       return {
-        text: "Couldn't connect to Finnhub. Please check your internet connection and try again.",
+        text:
+          "Couldn't connect to Finnhub. Please check your internet connection and try again.",
         color: ERROR_COLOR,
       };
     case "service":
       return {
-        text: "Finnhub seems to be having issues right now. Your key has been saved — we'll verify it automatically when the service is back.",
+        text:
+          "Finnhub seems to be having issues right now. Your key has been saved — we'll verify it automatically when the service is back.",
         color: WARNING_COLOR,
       };
   }

@@ -211,9 +211,10 @@ export async function handleStockQuote(
   const badge = resolveBadge(state.lastKnownMarketState);
 
   // ── Plain-text summary (used in Chalie's reasoning context) ───────────────
-  const text =
-    `${symbol} (${name}): ${formatPrice(quote.price)} ` +
-    `${formatChange(quote.change)} (${formatChangePercent(quote.changePercent)}) | ` +
+  const text = `${symbol} (${name}): ${formatPrice(quote.price)} ` +
+    `${formatChange(quote.change)} (${
+      formatChangePercent(quote.changePercent)
+    }) | ` +
     `Day range: ${formatPrice(quote.low)}–${formatPrice(quote.high)} | ` +
     `Open: ${formatPrice(quote.open)} | ` +
     `Prev close: ${formatPrice(quote.previousClose)} | ` +
@@ -229,8 +230,12 @@ export async function handleStockQuote(
   <div style="display:flex;justify-content:space-between;align-items:flex-start;
       margin-bottom:6px">
     <div>
-      <span style="font-size:20px;font-weight:700;color:#111827">${escapeHtml(symbol)}</span>
-      <span style="font-size:13px;color:#6b7280;margin-left:8px">${escapeHtml(name)}</span>
+      <span style="font-size:20px;font-weight:700;color:#111827">${
+    escapeHtml(symbol)
+  }</span>
+      <span style="font-size:13px;color:#6b7280;margin-left:8px">${
+    escapeHtml(name)
+  }</span>
     </div>
     <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;
         white-space:nowrap;background:${badge.background};color:${badge.color}">
@@ -244,7 +249,9 @@ export async function handleStockQuote(
       ${formatPrice(quote.price)}
     </span>
     <span style="font-size:15px;font-weight:600;color:${color};margin-left:8px">
-      ${formatChange(quote.change)} (${formatChangePercent(quote.changePercent)})
+      ${formatChange(quote.change)} (${
+    formatChangePercent(quote.changePercent)
+  })
     </span>
   </div>
 

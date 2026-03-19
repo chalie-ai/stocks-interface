@@ -109,9 +109,13 @@ function renderNewsItem(article: NewsItem, isLast: boolean): string {
     ${escapeHtml(article.headline)}
   </a>
   <div style="margin-top:4px;display:flex;gap:8px;align-items:center">
-    <span style="font-size:12px;color:#6b7280">${escapeHtml(article.source)}</span>
+    <span style="font-size:12px;color:#6b7280">${
+    escapeHtml(article.source)
+  }</span>
     <span style="font-size:12px;color:#d1d5db">&bull;</span>
-    <span style="font-size:12px;color:#9ca3af">${formatDate(article.datetime)}</span>
+    <span style="font-size:12px;color:#9ca3af">${
+    formatDate(article.datetime)
+  }</span>
   </div>
 </div>`.trim();
 }
@@ -180,7 +184,9 @@ export async function handleStockNews(
 <div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
     border-radius:8px;padding:16px;max-width:520px">
   <p style="margin:0;color:#dc2626;font-size:14px">
-    <strong>Error fetching news for ${escapeHtml(symbol)}:</strong> ${escapeHtml(msg)}
+    <strong>Error fetching news for ${escapeHtml(symbol)}:</strong> ${
+      escapeHtml(msg)
+    }
   </p>
 </div>`.trim();
     return {
@@ -208,8 +214,7 @@ export async function handleStockNews(
   const textParts = items.map(
     (a) => `"${a.headline}" (${a.source}, ${formatDate(a.datetime)})`,
   );
-  const text =
-    `Recent news for ${symbol} (${items.length} article` +
+  const text = `Recent news for ${symbol} (${items.length} article` +
     `${items.length !== 1 ? "s" : ""}): ` +
     textParts.join(" | ");
 
@@ -218,8 +223,9 @@ export async function handleStockNews(
     .map((article, i) => renderNewsItem(article, i === items.length - 1))
     .join("\n");
 
-  const articleCountLabel =
-    `${items.length} article${items.length !== 1 ? "s" : ""}`;
+  const articleCountLabel = `${items.length} article${
+    items.length !== 1 ? "s" : ""
+  }`;
 
   const html = `
 <div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
@@ -232,7 +238,9 @@ export async function handleStockNews(
     <span style="font-size:15px;font-weight:700;color:#111827">
       Recent News &mdash; ${escapeHtml(symbol)}
     </span>
-    <span style="font-size:12px;color:#9ca3af">${escapeHtml(articleCountLabel)}</span>
+    <span style="font-size:12px;color:#9ca3af">${
+    escapeHtml(articleCountLabel)
+  }</span>
   </div>
 
   <!-- News items -->

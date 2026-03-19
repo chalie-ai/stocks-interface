@@ -7,22 +7,22 @@
  */
 
 export {
-  FinnhubClient,
-  FinnhubAuthError,
-  FinnhubNetworkError,
   FinnhubApiError,
+  FinnhubAuthError,
+  FinnhubClient,
+  FinnhubNetworkError,
 } from "./client.ts";
 export type { MetricsCacheEntry } from "./client.ts";
-export { RateLimiter, createRateLimiter } from "./rate-limiter.ts";
+export { createRateLimiter, RateLimiter } from "./rate-limiter.ts";
 export type {
-  Quote,
   BasicMetrics,
+  CandleData,
   CompanyProfile,
   MarketStatus,
-  CandleData,
   NewsItem,
-  WatchlistItem,
   PriceAlert,
-  ToolState,
+  Quote,
   Settings,
+  ToolState,
+  WatchlistItem,
 } from "./types.ts";

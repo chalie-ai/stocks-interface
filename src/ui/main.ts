@@ -23,11 +23,8 @@
  * @module stocks-interface/ui/main
  */
 
-import type { ToolState, Quote } from "../finnhub/types.ts";
-import {
-  renderWatchlistSection,
-  renderEmptyWatchlist,
-} from "./watchlist.ts";
+import type { Quote, ToolState } from "../finnhub/types.ts";
+import { renderEmptyWatchlist, renderWatchlistSection } from "./watchlist.ts";
 
 // ---------------------------------------------------------------------------
 // Public type — ViewState
@@ -145,7 +142,7 @@ function changeBg(value: number): string {
 function renderIndexPill(
   symbol: string,
   displayName: string,
-  quote: Quote | null
+  quote: Quote | null,
 ): string {
   if (quote === null) {
     // Skeleton pill — symbol visible but price obscured.
@@ -247,7 +244,7 @@ function renderIndexPill(
  */
 function renderIndexSummaryRow(
   state: ToolState,
-  quotes: Map<string, Quote>
+  quotes: Map<string, Quote>,
 ): string {
   const indexItems = state.watchlist.filter((item) => item.isIndex);
   if (indexItems.length === 0) {
@@ -296,7 +293,9 @@ function renderAlertsCountBadge(state: ToolState): string {
     return "";
   }
 
-  const label = activeCount === 1 ? "1 active price alert" : `${activeCount} active price alerts`;
+  const label = activeCount === 1
+    ? "1 active price alert"
+    : `${activeCount} active price alerts`;
 
   return `<div style="
     margin-top: 16px;
@@ -342,13 +341,14 @@ function renderSuggestedPrompts(): string {
 
   const items = prompts
     .map(
-      (p) => `<li style="
+      (p) =>
+        `<li style="
         padding: 7px 0;
         border-bottom: 1px solid rgba(0,0,0,0.06);
         font-size: 0.85rem;
         color: #444;
         font-style: italic;
-      ">&ldquo;${p}&rdquo;</li>`
+      ">&ldquo;${p}&rdquo;</li>`,
     )
     .join("\n");
 
@@ -444,16 +444,17 @@ function renderLoadingView(state: ToolState): string {
 function renderErrorView(state: ToolState): string {
   const lastUpdated = state.lastSyncAt
     ? new Date(state.lastSyncAt).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+      hour: "2-digit",
+      minute: "2-digit",
+    })
     : "never";
 
   const retryMinutes = Math.round(
-    state.settings.syncIntervalMarketClosed / 60_000
+    state.settings.syncIntervalMarketClosed / 60_000,
   );
-  const retryLabel =
-    retryMinutes === 1 ? "1 minute" : `${retryMinutes} minutes`;
+  const retryLabel = retryMinutes === 1
+    ? "1 minute"
+    : `${retryMinutes} minutes`;
 
   return `<div style="
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -570,10 +571,9 @@ function renderReadyView(state: ToolState, quotes: Map<string, Quote>): string {
   const indexRow = renderIndexSummaryRow(state, quotes);
 
   const nonIndexItems = state.watchlist.filter((item) => !item.isIndex);
-  const watchlistSection =
-    nonIndexItems.length > 0
-      ? renderWatchlistSection(nonIndexItems, quotes)
-      : "";
+  const watchlistSection = nonIndexItems.length > 0
+    ? renderWatchlistSection(nonIndexItems, quotes)
+    : "";
 
   const alertsBadge = renderAlertsCountBadge(state);
 
@@ -584,10 +584,12 @@ function renderReadyView(state: ToolState, quotes: Map<string, Quote>): string {
         text-align: right;
         margin-bottom: 12px;
         font-variant-numeric: tabular-nums;
-      ">Updated ${new Date(state.lastSyncAt).toLocaleTimeString([], {
+      ">Updated ${
+      new Date(state.lastSyncAt).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
-      })}</div>`
+      })
+    }</div>`
     : "";
 
   return `<div style="
@@ -646,7 +648,7 @@ function renderReadyView(state: ToolState, quotes: Map<string, Quote>): string {
 export function renderMainView(
   state: ToolState,
   quotes: Map<string, Quote> | null,
-  viewState: ViewState
+  viewState: ViewState,
 ): string {
   switch (viewState) {
     case "loading":

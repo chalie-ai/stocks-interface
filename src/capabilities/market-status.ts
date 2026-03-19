@@ -254,15 +254,14 @@ function dateAtEtTime(etDateStr: string, hour: number, minute: number): Date {
     const iso = `${etDateStr}T${pad2(hour)}:${pad2(minute)}:00${tzOffset}`;
     const candidate = new Date(iso);
     // Verify by formatting back: the ET hour must match.
-    const etHour =
-      parseInt(
-        new Intl.DateTimeFormat("en-US", {
-          timeZone: ET_TIMEZONE,
-          hour: "2-digit",
-          hour12: false,
-        }).format(candidate),
-        10,
-      ) % 24;
+    const etHour = parseInt(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: ET_TIMEZONE,
+        hour: "2-digit",
+        hour12: false,
+      }).format(candidate),
+      10,
+    ) % 24;
     if (etHour === hour) return candidate;
   }
   // Fallback (should not be reached for 9:30 AM or 4:00 PM ET)
@@ -300,7 +299,9 @@ function nextBusinessDateStr(etDateStr: string, etWeekday: number): string {
     daysToAdd = 1;
   }
   date.setUTCDate(date.getUTCDate() + daysToAdd);
-  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}`;
+  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${
+    pad2(date.getUTCDate())
+  }`;
 }
 
 /**
@@ -334,10 +335,14 @@ function classifyMarketPhase(
   const regularClose = MARKET_CLOSE_HOUR_ET * 60 + MARKET_CLOSE_MINUTE_ET;
   const afterHoursEnd = AFTERHOURS_END_HOUR_ET * 60;
 
-  if (minutesSinceMidnight >= preMarketStart && minutesSinceMidnight < regularOpen) {
+  if (
+    minutesSinceMidnight >= preMarketStart && minutesSinceMidnight < regularOpen
+  ) {
     return "pre";
   }
-  if (minutesSinceMidnight >= regularClose && minutesSinceMidnight < afterHoursEnd) {
+  if (
+    minutesSinceMidnight >= regularClose && minutesSinceMidnight < afterHoursEnd
+  ) {
     return "after";
   }
   return "closed";
@@ -388,7 +393,9 @@ function computeNextEvent(
   phase: "open" | "pre" | "after" | "closed",
   etParts: EtTimeParts,
 ): { label: string; date: Date } | null {
-  const etDateStr = `${etParts.year}-${pad2(etParts.month)}-${pad2(etParts.day)}`;
+  const etDateStr = `${etParts.year}-${pad2(etParts.month)}-${
+    pad2(etParts.day)
+  }`;
 
   if (phase === "open") {
     const closeDate = dateAtEtTime(
@@ -411,7 +418,11 @@ function computeNextEvent(
   // After-hours or closed: next open is the next business day.
   const weekdayNum = WEEKDAY_NUMS[etParts.weekday] ?? 1;
   const nextDate = nextBusinessDateStr(etDateStr, weekdayNum);
-  const openDate = dateAtEtTime(nextDate, MARKET_OPEN_HOUR_ET, MARKET_OPEN_MINUTE_ET);
+  const openDate = dateAtEtTime(
+    nextDate,
+    MARKET_OPEN_HOUR_ET,
+    MARKET_OPEN_MINUTE_ET,
+  );
   return { label: "Market opens", date: openDate };
 }
 
@@ -552,7 +563,7 @@ export async function handleMarketStatus(
 
   /** Resolved quote or null on failure, indexed by position in INDEX_SYMBOLS. */
   const quotes: (Quote | null)[] = quoteResults.map((r) =>
-    r.status === "fulfilled" ? r.value : null,
+    r.status === "fulfilled" ? r.value : null
   );
 
   // ── 4. Compute next market event ─────────────────────────────────────────
@@ -566,17 +577,18 @@ export async function handleMarketStatus(
   }).join(" | ");
 
   const nextEventText = nextEvent
-    ? `${nextEvent.label} at ${formatEtTime(nextEvent.date)} (${formatLocalDateTime(nextEvent.date)} local)`
+    ? `${nextEvent.label} at ${formatEtTime(nextEvent.date)} (${
+      formatLocalDateTime(nextEvent.date)
+    } local)`
     : "";
 
-  const phaseLabel =
-    phase === "open"
-      ? "Open"
-      : phase === "pre"
-        ? "Pre-Market"
-        : phase === "after"
-          ? "After-Hours"
-          : "Closed";
+  const phaseLabel = phase === "open"
+    ? "Open"
+    : phase === "pre"
+    ? "Pre-Market"
+    : phase === "after"
+    ? "After-Hours"
+    : "Closed";
 
   const text = [
     `Market: ${phaseLabel} | ${etTimeStr} ET`,
@@ -590,14 +602,13 @@ export async function handleMarketStatus(
   // ── 6. Build HTML card ────────────────────────────────────────────────────
 
   // Holiday banner (only shown when a holiday is active)
-  const holidayBanner =
-    holiday !== null
-      ? `
+  const holidayBanner = holiday !== null
+    ? `
   <div style="background:#fef9c3;border-radius:4px;padding:8px 12px;
       margin-bottom:12px;font-size:13px;color:#92400e">
     🗓 Market closed for <strong>${escapeHtml(holiday)}</strong>
   </div>`
-      : "";
+    : "";
 
   // Index summary rows
   const indexRows = INDEX_SYMBOLS.map((sym, i) => {
@@ -632,8 +643,12 @@ export async function handleMarketStatus(
   <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f3f4f6;
       font-size:12px;color:#6b7280">
     ${escapeHtml(nextEvent.label)}:
-    <strong style="color:#374151">${escapeHtml(formatEtTime(nextEvent.date))}</strong>
-    <span style="color:#9ca3af"> · ${escapeHtml(formatLocalDateTime(nextEvent.date))} (local)</span>
+    <strong style="color:#374151">${
+      escapeHtml(formatEtTime(nextEvent.date))
+    }</strong>
+    <span style="color:#9ca3af"> · ${
+      escapeHtml(formatLocalDateTime(nextEvent.date))
+    } (local)</span>
   </div>`
     : "";
 
@@ -656,7 +671,9 @@ export async function handleMarketStatus(
 
   <!-- Current ET time -->
   <div style="font-size:13px;color:#6b7280;margin-bottom:12px">
-    Current time: <strong style="color:#374151">${escapeHtml(etTimeStr)} ET</strong>
+    Current time: <strong style="color:#374151">${
+    escapeHtml(etTimeStr)
+  } ET</strong>
   </div>
 
   ${holidayBanner}
@@ -747,7 +764,9 @@ export async function handleEarningsCalendar(
   const toDate = new Date(
     Date.UTC(etParts.year, etParts.month - 1, etParts.day + daysAhead),
   );
-  const toStr = `${toDate.getUTCFullYear()}-${pad2(toDate.getUTCMonth() + 1)}-${pad2(toDate.getUTCDate())}`;
+  const toStr = `${toDate.getUTCFullYear()}-${pad2(toDate.getUTCMonth() + 1)}-${
+    pad2(toDate.getUTCDate())
+  }`;
 
   // ── 3. Fetch earnings calendar ────────────────────────────────────────────
   let entries: EarningsEntry[];
@@ -773,27 +792,28 @@ export async function handleEarningsCalendar(
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
 
   // ── 5. Compute heading ────────────────────────────────────────────────────
-  const heading =
-    symbolFilter !== undefined
-      ? `Earnings for ${symbolFilter} (next ${daysAhead} day${daysAhead !== 1 ? "s" : ""})`
-      : `Upcoming Earnings — Next ${daysAhead} Day${daysAhead !== 1 ? "s" : ""}`;
+  const heading = symbolFilter !== undefined
+    ? `Earnings for ${symbolFilter} (next ${daysAhead} day${
+      daysAhead !== 1 ? "s" : ""
+    })`
+    : `Upcoming Earnings — Next ${daysAhead} Day${daysAhead !== 1 ? "s" : ""}`;
 
   // ── 6. Build plain-text summary ───────────────────────────────────────────
-  const text =
-    sorted.length === 0
-      ? `${heading}: No earnings scheduled.`
-      : `${heading}: ` +
-        sorted
-          .slice(0, 10)
-          .map((e) => {
-            const timing = reportTimeLabel(e.reportTime);
-            const eps =
-              e.epsEstimate !== null
-                ? `Est. EPS: $${e.epsEstimate.toFixed(2)}`
-                : "Est. EPS: N/A";
-            return `${e.symbol} — ${formatShortDate(e.date)} · ${timing} · ${eps}`;
-          })
-          .join("; ");
+  const text = sorted.length === 0
+    ? `${heading}: No earnings scheduled.`
+    : `${heading}: ` +
+      sorted
+        .slice(0, 10)
+        .map((e) => {
+          const timing = reportTimeLabel(e.reportTime);
+          const eps = e.epsEstimate !== null
+            ? `Est. EPS: $${e.epsEstimate.toFixed(2)}`
+            : "Est. EPS: N/A";
+          return `${e.symbol} — ${
+            formatShortDate(e.date)
+          } · ${timing} · ${eps}`;
+        })
+        .join("; ");
 
   // ── 7. Build HTML card ────────────────────────────────────────────────────
 
@@ -818,10 +838,12 @@ export async function handleEarningsCalendar(
     .map((e) => {
       const timing = reportTimeLabel(e.reportTime);
       const timingColor = reportTimeColor(e.reportTime);
-      const epsEstStr =
-        e.epsEstimate !== null ? `$${e.epsEstimate.toFixed(2)}` : "N/A";
-      const epsActStr =
-        e.epsActual !== null ? `$${e.epsActual.toFixed(2)}` : "—";
+      const epsEstStr = e.epsEstimate !== null
+        ? `$${e.epsEstimate.toFixed(2)}`
+        : "N/A";
+      const epsActStr = e.epsActual !== null
+        ? `$${e.epsActual.toFixed(2)}`
+        : "—";
 
       return `
       <tr style="border-top:1px solid #f3f4f6">

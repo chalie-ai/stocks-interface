@@ -39,6 +39,7 @@ import { MarketSync } from "../../src/sync/market-sync.ts";
 import type { Signal } from "../../src/sync/market-sync.ts";
 import type {
   MarketStatus,
+  PriceAlert,
   Quote,
   Settings,
   ToolState,
@@ -823,6 +824,135 @@ describe("MarketSync", () => {
         s.type === "stock_move" && s.symbol === "MSFT"
       );
       expect(moves).toHaveLength(0);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 10. Price alert integration — checkAlerts() is wired into runCycle()
+  // -------------------------------------------------------------------------
+
+  describe("price alert integration — checkAlerts wired into runCycle", () => {
+    // -----------------------------------------------------------------------
+    // Fixture helper: builds a minimal active PriceAlert
+    // -----------------------------------------------------------------------
+
+    /**
+     * Creates a minimal active {@link PriceAlert} fixture.
+     *
+     * @param symbol      - Ticker symbol to monitor.
+     * @param targetPrice - Price level that triggers the alert.
+     * @param direction   - `"above"` fires when `price >= targetPrice`;
+     *                      `"below"` fires when `price <= targetPrice`.
+     * @returns A fully-populated {@link PriceAlert} fixture with `active: true`.
+     */
+    function makeAlert(
+      symbol: string,
+      targetPrice: number,
+      direction: "above" | "below" = "above",
+    ): PriceAlert {
+      return {
+        id: crypto.randomUUID(),
+        symbol,
+        targetPrice,
+        direction,
+        message: "",
+        createdAt: new Date(MIDDAY_UTC).toISOString(),
+        triggeredAt: null,
+        active: true,
+      };
+    }
+
+    /**
+     * Verifies that a `stock_alert` signal is emitted when a price alert
+     * crosses its threshold during a sync cycle.
+     *
+     * Setup: AAPL quote at $110, alert set to fire when price >= $100 ("above").
+     * Expected: one `stock_alert` signal with energy 0.65 and type `"stock_alert"`.
+     */
+    it('emits a stock_alert signal when a price alert crosses its threshold ("above")', async () => {
+      const item = makeWatchlistItem("AAPL");
+      const alert = makeAlert("AAPL", 100, "above");
+
+      const state = makeState({
+        watchlist: [item],
+        priceAlerts: [alert],
+      });
+
+      // Quote at $110 — above the $100 target.
+      const client = makeMockClient(makeQuote("AAPL", 1, 110));
+
+      const signals = await runOneCycle(state, client, time);
+
+      const priceAlertSignals = signals.filter(
+        (s) => s.type === "stock_alert" && s.symbol === "AAPL",
+      );
+      expect(priceAlertSignals.length).toBeGreaterThanOrEqual(1);
+      expect(priceAlertSignals[0]!.energy).toBe(0.65);
+    });
+
+    /**
+     * Verifies that no `stock_alert` signal is emitted when the price has NOT
+     * crossed the alert threshold.
+     *
+     * Setup: AAPL quote at $90, alert set to fire when price >= $100 ("above").
+     * Expected: no signal whose source is a price-alert threshold crossing.
+     * (A threshold-movement `stock_move` from the normal evaluation loop may
+     * still fire but that is unrelated to price alerts.)
+     */
+    it("does NOT emit a price-alert signal when the threshold is not crossed", async () => {
+      const item = makeWatchlistItem("AAPL");
+      // Alert fires above $100, but current price is $90.
+      const alert = makeAlert("AAPL", 100, "above");
+
+      const state = makeState({
+        watchlist: [item],
+        priceAlerts: [alert],
+      });
+
+      // Quote at $90 — below the $100 target, change well below move threshold.
+      const client = makeMockClient(makeQuote("AAPL", 0.5, 90));
+
+      const signals = await runOneCycle(state, client, time);
+
+      // No price-alert-driven signal for AAPL should exist.
+      // We distinguish by looking for signals whose content contains "Price alert:".
+      const priceAlertSignals = signals.filter(
+        (s) =>
+          s.type === "stock_alert" &&
+          s.symbol === "AAPL" &&
+          s.content.startsWith("Price alert:"),
+      );
+      expect(priceAlertSignals).toHaveLength(0);
+    });
+
+    /**
+     * Verifies that a triggered alert is marked `active: false` in the mutated
+     * state after the sync cycle completes.
+     *
+     * This exercises the state-merge path where `checkAlerts` returns an
+     * `updatedState` whose `priceAlerts` array is written back into the live
+     * `state` object inside `runCycle`.
+     */
+    it("marks the triggered alert as inactive in state after the cycle", async () => {
+      const item = makeWatchlistItem("TSLA");
+      const alert = makeAlert("TSLA", 200, "above");
+
+      const state = makeState({
+        watchlist: [item],
+        priceAlerts: [alert],
+      });
+
+      // Quote at $250 — above the $200 target.
+      const client = makeMockClient(makeQuote("TSLA", 2, 250));
+
+      await runOneCycle(state, client, time);
+
+      // After the cycle, the alert that fired should be deactivated.
+      const deactivated = state.priceAlerts.filter(
+        (a) => a.id === alert.id && !a.active,
+      );
+      expect(deactivated).toHaveLength(1);
+      expect(deactivated[0]!.triggeredAt).not.toBeNull();
     });
   });
 });

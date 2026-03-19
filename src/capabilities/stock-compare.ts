@@ -202,7 +202,9 @@ function buildTableRow(row: CompareRow, isEven: boolean): string {
     const errMsg = escapeHtml(row.quoteError ?? "Unknown error");
     return `
     <tr style="background:${rowBg}">
-      <td style="padding:8px 10px;font-weight:600;color:#111827">${escapeHtml(row.symbol)}</td>
+      <td style="padding:8px 10px;font-weight:600;color:#111827">${
+      escapeHtml(row.symbol)
+    }</td>
       <td style="padding:8px 10px;color:#dc2626;font-size:12px" colspan="5">
         Error: ${errMsg}
       </td>
@@ -218,8 +220,12 @@ function buildTableRow(row: CompareRow, isEven: boolean): string {
   return `
     <tr style="background:${rowBg}">
       <td style="padding:8px 10px">
-        <span style="font-weight:700;color:#111827">${escapeHtml(q.symbol)}</span>
-        ${name ? `<br><span style="font-size:11px;color:#6b7280">${name}</span>` : ""}
+        <span style="font-weight:700;color:#111827">${
+    escapeHtml(q.symbol)
+  }</span>
+        ${
+    name ? `<br><span style="font-size:11px;color:#6b7280">${name}</span>` : ""
+  }
       </td>
       <td style="padding:8px 10px;font-weight:600;color:#111827;text-align:right;
           white-space:nowrap">
@@ -298,7 +304,8 @@ export async function handleStockCompare(
     const msg = "No symbols provided for comparison.";
     return {
       text: msg,
-      html: `<p style="font-family:system-ui,sans-serif;color:#dc2626">${msg}</p>`,
+      html:
+        `<p style="font-family:system-ui,sans-serif;color:#dc2626">${msg}</p>`,
       error: msg,
     };
   }
@@ -325,8 +332,8 @@ export async function handleStockCompare(
     const quoteError =
       quoteResult !== undefined && quoteResult.status === "rejected"
         ? (quoteResult.reason instanceof Error
-            ? quoteResult.reason.message
-            : String(quoteResult.reason))
+          ? quoteResult.reason.message
+          : String(quoteResult.reason))
         : null;
 
     const metrics =
@@ -342,10 +349,9 @@ export async function handleStockCompare(
     .filter((r) => r.quote === null)
     .map((r) => r.symbol);
 
-  const errorSummary =
-    failedSymbols.length > 0
-      ? `Failed to fetch data for: ${failedSymbols.join(", ")}`
-      : undefined;
+  const errorSummary = failedSymbols.length > 0
+    ? `Failed to fetch data for: ${failedSymbols.join(", ")}`
+    : undefined;
 
   // ── Plain-text summary ────────────────────────────────────────────────────
   const successRows = rows.filter((r) => r.quote !== null);
@@ -361,9 +367,7 @@ export async function handleStockCompare(
 
   const text =
     `Comparison (${symbols.length} stock${symbols.length !== 1 ? "s" : ""}): ` +
-    (textParts.length > 0
-      ? textParts.join(" | ")
-      : "No data available.") +
+    (textParts.length > 0 ? textParts.join(" | ") : "No data available.") +
     " [P/E is daily-cached, not real-time]";
 
   // ── HTML card ─────────────────────────────────────────────────────────────
@@ -418,5 +422,9 @@ export async function handleStockCompare(
   </p>
 </div>`.trim();
 
-  return { text, html, ...(errorSummary !== undefined ? { error: errorSummary } : {}) };
+  return {
+    text,
+    html,
+    ...(errorSummary !== undefined ? { error: errorSummary } : {}),
+  };
 }

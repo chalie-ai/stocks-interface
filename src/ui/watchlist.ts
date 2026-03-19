@@ -21,7 +21,7 @@
  * @module stocks-interface/ui/watchlist
  */
 
-import type { WatchlistItem, Quote } from "../finnhub/types.ts";
+import type { Quote, WatchlistItem } from "../finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Re-export types consumed by callers (avoids forcing them to import types.ts)
@@ -416,7 +416,7 @@ function renderSkeletonCard(item: WatchlistItem): string {
  */
 export function renderWatchlistSection(
   items: WatchlistItem[],
-  quotes: Map<string, Quote> | null
+  quotes: Map<string, Quote> | null,
 ): string {
   if (items.length === 0) {
     return renderEmptyWatchlist();
@@ -434,9 +434,8 @@ export function renderWatchlistSection(
     return renderQuoteCard(item, quote);
   });
 
-  const loadingBanner =
-    quotes === null
-      ? `<div style="
+  const loadingBanner = quotes === null
+    ? `<div style="
           font-size: 0.8rem;
           color: #888;
           margin-bottom: 12px;
@@ -454,7 +453,7 @@ export function renderWatchlistSection(
           "></span>
           Fetching market data…
         </div>`
-      : "";
+    : "";
 
   return `<div style="
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

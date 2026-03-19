@@ -43,9 +43,9 @@ Invoke each capability by passing its name as the `capability` parameter.
 
 Fetch a real-time quote for a single ticker.
 
-| Parameter  | Type   | Required | Description                   |
-| ---------- | ------ | -------- | ----------------------------- |
-| `symbol`   | string | ✅       | Ticker symbol (e.g. `AAPL`)   |
+| Parameter | Type   | Required | Description                 |
+| --------- | ------ | -------- | --------------------------- |
+| `symbol`  | string | ✅       | Ticker symbol (e.g. `AAPL`) |
 
 **Example prompt:** _"What is Apple's current stock price?"_
 
@@ -55,9 +55,9 @@ Fetch a real-time quote for a single ticker.
 
 Side-by-side comparison of multiple tickers.
 
-| Parameter | Type   | Required | Description                                        |
-| --------- | ------ | -------- | -------------------------------------------------- |
-| `symbols` | string | ✅       | Comma-separated tickers (e.g. `AAPL,MSFT,GOOGL`)  |
+| Parameter | Type   | Required | Description                                      |
+| --------- | ------ | -------- | ------------------------------------------------ |
+| `symbols` | string | ✅       | Comma-separated tickers (e.g. `AAPL,MSFT,GOOGL`) |
 
 **Example prompt:** _"Compare Apple, Microsoft, and Google."_
 
@@ -67,10 +67,10 @@ Side-by-side comparison of multiple tickers.
 
 Historical price chart for a single ticker.
 
-| Parameter | Type   | Required | Description                                  |
-| --------- | ------ | -------- | -------------------------------------------- |
-| `symbol`  | string | ✅       | Ticker symbol                                |
-| `period`  | string | ✅       | One of: `7d`, `30d`, `90d`, `1y`, `ytd`     |
+| Parameter | Type   | Required | Description                             |
+| --------- | ------ | -------- | --------------------------------------- |
+| `symbol`  | string | ✅       | Ticker symbol                           |
+| `period`  | string | ✅       | One of: `7d`, `30d`, `90d`, `1y`, `ytd` |
 
 **Example prompt:** _"Show Tesla's price history for the past 30 days."_
 
@@ -80,10 +80,10 @@ Historical price chart for a single ticker.
 
 Latest news articles for a ticker.
 
-| Parameter | Type    | Required | Description                              |
-| --------- | ------- | -------- | ---------------------------------------- |
-| `symbol`  | string  | ✅       | Ticker symbol                            |
-| `limit`   | integer | ❌       | Maximum number of articles (default: 5)  |
+| Parameter | Type    | Required | Description                             |
+| --------- | ------- | -------- | --------------------------------------- |
+| `symbol`  | string  | ✅       | Ticker symbol                           |
+| `limit`   | integer | ❌       | Maximum number of articles (default: 5) |
 
 **Example prompt:** _"Show me the latest 10 news articles for NVDA."_
 
@@ -103,9 +103,9 @@ _No additional parameters required._
 
 Upcoming earnings announcements.
 
-| Parameter  | Type    | Required | Description                                          |
-| ---------- | ------- | -------- | ---------------------------------------------------- |
-| `daysAhead`| integer | ❌       | Calendar days to look ahead (default: 7)             |
+| Parameter   | Type    | Required | Description                              |
+| ----------- | ------- | -------- | ---------------------------------------- |
+| `daysAhead` | integer | ❌       | Calendar days to look ahead (default: 7) |
 
 **Example prompt:** _"What earnings are coming up in the next two weeks?"_
 
@@ -128,9 +128,9 @@ Add a symbol to your personal watchlist.
 
 Remove a symbol from your personal watchlist.
 
-| Parameter | Type   | Required | Description     |
-| --------- | ------ | -------- | --------------- |
-| `symbol`  | string | ✅       | Ticker symbol   |
+| Parameter | Type   | Required | Description   |
+| --------- | ------ | -------- | ------------- |
+| `symbol`  | string | ✅       | Ticker symbol |
 
 **Example prompt:** _"Remove TSLA from my watchlist."_
 
@@ -140,12 +140,12 @@ Remove a symbol from your personal watchlist.
 
 Create a price alert that fires when a symbol crosses a target level.
 
-| Parameter     | Type   | Required | Description                                   |
-| ------------- | ------ | -------- | --------------------------------------------- |
-| `symbol`      | string | ✅       | Ticker symbol                                 |
-| `targetPrice` | float  | ✅       | Price level to monitor                        |
-| `direction`   | string | ✅       | Trigger direction — one of: `above`, `below`  |
-| `message`     | string | ❌       | Optional custom note attached to the alert    |
+| Parameter     | Type   | Required | Description                                  |
+| ------------- | ------ | -------- | -------------------------------------------- |
+| `symbol`      | string | ✅       | Ticker symbol                                |
+| `targetPrice` | float  | ✅       | Price level to monitor                       |
+| `direction`   | string | ✅       | Trigger direction — one of: `above`, `below` |
+| `message`     | string | ❌       | Optional custom note attached to the alert   |
 
 **Example prompt:** _"Alert me when AAPL goes above $220."_
 
@@ -165,9 +165,9 @@ _No additional parameters required._
 
 Delete a price alert by its ID.
 
-| Parameter | Type   | Required | Description                 |
-| --------- | ------ | -------- | --------------------------- |
-| `alertId` | string | ✅       | ID of the alert to delete   |
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| `alertId` | string | ✅       | ID of the alert to delete |
 
 **Example prompt:** _"Delete alert abc-123."_
 
@@ -188,8 +188,8 @@ The tool is implemented in **Deno** (TypeScript). The Chalie runtime invokes
 `src/index.ts` with a base64-encoded JSON payload in `Deno.args[0]` and reads a
 single-line JSON response from stdout. When the `STOCKS_DAEMON` environment
 variable is set to `1`, the process also starts a background market-sync loop
-that fetches quotes at configurable intervals and emits signals for notable price
-movements and triggered alerts.
+that fetches quotes at configurable intervals and emits signals for notable
+price movements and triggered alerts.
 
 ```
 src/

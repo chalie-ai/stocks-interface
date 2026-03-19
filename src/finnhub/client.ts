@@ -626,7 +626,9 @@ export class FinnhubClient {
    */
   async basicMetrics(symbol: string): Promise<BasicMetrics> {
     const cached = this.metricsCache.get(symbol);
-    if (cached !== undefined && Date.now() - cached.fetchedAt < DAILY_CACHE_TTL_MS) {
+    if (
+      cached !== undefined && Date.now() - cached.fetchedAt < DAILY_CACHE_TTL_MS
+    ) {
       return cached.data;
     }
 

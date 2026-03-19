@@ -162,8 +162,8 @@ function renderSparklineSvg(
     .map((price, i) => {
       const x = SVG_PADDING + (i / Math.max(closes.length - 1, 1)) * innerW;
       // SVG y-axis is inverted: higher prices map to smaller y values.
-      const y =
-        SVG_HEIGHT - SVG_PADDING - ((price - minPrice) / priceRange) * innerH;
+      const y = SVG_HEIGHT - SVG_PADDING -
+        ((price - minPrice) / priceRange) * innerH;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
@@ -282,7 +282,9 @@ export async function handleStockHistory(
 <div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
     border-radius:8px;padding:16px;max-width:520px">
   <p style="margin:0;color:#dc2626;font-size:14px">
-    <strong>Error fetching ${escapeHtml(symbol)} history:</strong> ${escapeHtml(msg)}
+    <strong>Error fetching ${escapeHtml(symbol)} history:</strong> ${
+      escapeHtml(msg)
+    }
   </p>
 </div>`.trim();
     return {
@@ -294,7 +296,8 @@ export async function handleStockHistory(
 
   // ── Handle no-data response ───────────────────────────────────────────────
   if (candles.status === "no_data" || candles.c.length === 0) {
-    const msg = `No price history available for ${symbol} over the selected period (${label}).`;
+    const msg =
+      `No price history available for ${symbol} over the selected period (${label}).`;
     const html = `
 <div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
     border-radius:8px;padding:16px;max-width:520px">
@@ -322,8 +325,7 @@ export async function handleStockHistory(
   const sparklineSvg = renderSparklineSvg(closes, positiveReturn);
 
   // ── Plain-text summary ────────────────────────────────────────────────────
-  const text =
-    `${symbol} — ${label} History: ` +
+  const text = `${symbol} — ${label} History: ` +
     `Start ${formatPrice(startPrice)}, End ${formatPrice(endPrice)}, ` +
     `Return ${returnSign}${totalReturn.toFixed(2)}% | ` +
     `Period High ${formatPrice(periodHigh)}, Low ${formatPrice(periodLow)}`;

@@ -294,7 +294,9 @@ export class RateLimiter {
   private drain(): void {
     this.refreshWindow();
 
-    while (this.queue.length > 0 && this.requestsThisMinute < RateLimiter.CEILING) {
+    while (
+      this.queue.length > 0 && this.requestsThisMinute < RateLimiter.CEILING
+    ) {
       const idx = this.findNextDispatchable();
       if (idx === -1) break; // All remaining items are blocked by stagger.
 
@@ -333,7 +335,10 @@ export class RateLimiter {
 
     // Constraint 1: wait for the window to reset if the ceiling has been hit.
     if (this.requestsThisMinute >= RateLimiter.CEILING) {
-      const windowResetWait = Math.max(0, this.windowStart + RateLimiter.WINDOW_MS - now);
+      const windowResetWait = Math.max(
+        0,
+        this.windowStart + RateLimiter.WINDOW_MS - now,
+      );
       delay = Math.max(delay, windowResetWait);
     }
 

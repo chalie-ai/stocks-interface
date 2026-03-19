@@ -43,8 +43,8 @@
  */
 
 import {
-  FinnhubClient,
   FinnhubAuthError,
+  FinnhubClient,
   FinnhubNetworkError,
 } from "./finnhub/client.ts";
 import { getDataDir, loadState, saveState } from "./state.ts";
@@ -52,25 +52,25 @@ import { MarketSync } from "./sync/market-sync.ts";
 import type { StopFn } from "./sync/market-sync.ts";
 import { renderSetupPage } from "./ui/setup.ts";
 import { renderMainView } from "./ui/main.ts";
-import type { ToolState, WatchlistItem, Quote } from "./finnhub/types.ts";
+import type { Quote, ToolState, WatchlistItem } from "./finnhub/types.ts";
 import type {
+  AlertDeleteParams,
+  AlertSetParams,
   CapabilityResult,
   HistoryPeriod,
-  AlertSetParams,
-  AlertDeleteParams,
 } from "./capabilities/index.ts";
 import {
-  handleStockQuote,
+  handleAlertDelete,
+  handleAlertList,
+  handleAlertSet,
+  handleEarningsCalendar,
+  handleMarketStatus,
   handleStockCompare,
   handleStockHistory,
   handleStockNews,
-  handleMarketStatus,
-  handleEarningsCalendar,
+  handleStockQuote,
   handleWatchlistAdd,
   handleWatchlistRemove,
-  handleAlertSet,
-  handleAlertList,
-  handleAlertDelete,
 } from "./capabilities/index.ts";
 
 // ---------------------------------------------------------------------------
@@ -280,7 +280,8 @@ async function main(): Promise<void> {
     input = JSON.parse(decoded) as ToolInput;
   } catch {
     writeOutput({
-      text: "Invalid IPC payload: expected base64-encoded JSON in Deno.args[0].",
+      text:
+        "Invalid IPC payload: expected base64-encoded JSON in Deno.args[0].",
       html: renderSetupPage(),
       error: "Failed to decode or parse the base64 IPC payload.",
     });
@@ -304,8 +305,7 @@ async function main(): Promise<void> {
   // ── Step 4: Show setup wizard if no API key is available ─────────────────
   if (!resolvedApiKey) {
     writeOutput({
-      text:
-        "Finnhub API key required. " +
+      text: "Finnhub API key required. " +
         "Please configure your key to enable live market data.",
       html: renderSetupPage(),
     });
@@ -476,7 +476,8 @@ async function main(): Promise<void> {
         const quotes: Map<string, Quote> | null = null;
         const viewState = state.watchlist.length === 0 ? "empty" : "loading";
         result = {
-          text: `${TOOL_NAME} v${TOOL_VERSION} — specify a capability to fetch data.`,
+          text:
+            `${TOOL_NAME} v${TOOL_VERSION} — specify a capability to fetch data.`,
           html: renderMainView(state, quotes, viewState),
         };
         break;
@@ -521,8 +522,7 @@ async function main(): Promise<void> {
       const message = err instanceof Error ? err.message : String(err);
       writeOutput({
         text: `An unexpected error occurred: ${message}`,
-        html:
-          `<div style="padding:16px;color:#d32f2f;font-family:` +
+        html: `<div style="padding:16px;color:#d32f2f;font-family:` +
           `-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">` +
           `An unexpected error occurred: ${message}</div>`,
         error: message,

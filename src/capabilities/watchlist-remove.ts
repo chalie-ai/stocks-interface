@@ -97,7 +97,11 @@ export function handleWatchlistRemove(
     `Removed ${removedItem.symbol} (${removedItem.name}) from your watchlist. ` +
     `${remainingCount} symbol${remainingCount !== 1 ? "s" : ""} remaining.`;
 
-  const html = buildSuccessHtml(removedItem.symbol, removedItem.name, remainingCount);
+  const html = buildSuccessHtml(
+    removedItem.symbol,
+    removedItem.name,
+    remainingCount,
+  );
 
   return { result: { text, html }, updatedState };
 }
@@ -119,10 +123,11 @@ function buildSuccessHtml(
   name: string,
   remainingCount: number,
 ): string {
-  const remainingLabel =
-    remainingCount === 0
-      ? "Your watchlist is now empty."
-      : `${remainingCount} symbol${remainingCount !== 1 ? "s" : ""} remaining in your watchlist.`;
+  const remainingLabel = remainingCount === 0
+    ? "Your watchlist is now empty."
+    : `${remainingCount} symbol${
+      remainingCount !== 1 ? "s" : ""
+    } remaining in your watchlist.`;
 
   return `
 <div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
@@ -140,7 +145,9 @@ function buildSuccessHtml(
   <!-- Detail -->
   <div style="font-size:13px;color:#6b7280;line-height:1.6">
     <div>${escapeHtml(name)} is no longer being tracked.</div>
-    <div style="margin-top:4px;color:#9ca3af">${escapeHtml(remainingLabel)}</div>
+    <div style="margin-top:4px;color:#9ca3af">${
+    escapeHtml(remainingLabel)
+  }</div>
   </div>
 </div>`.trim();
 }

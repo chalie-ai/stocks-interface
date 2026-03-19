@@ -7,12 +7,7 @@
  */
 
 export { MarketSync } from "./market-sync.ts";
-export type {
-  Signal,
-  OnSignalFn,
-  OnSummaryFn,
-  StopFn,
-} from "./market-sync.ts";
+export type { OnSignalFn, OnSummaryFn, Signal, StopFn } from "./market-sync.ts";
 export {
   checkAlerts,
   createAlert,

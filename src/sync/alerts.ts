@@ -131,10 +131,9 @@ export function checkAlerts(
       return alert;
     }
 
-    const hasCrossed =
-      alert.direction === "above"
-        ? quote.price >= alert.targetPrice
-        : quote.price <= alert.targetPrice;
+    const hasCrossed = alert.direction === "above"
+      ? quote.price >= alert.targetPrice
+      : quote.price <= alert.targetPrice;
 
     if (!hasCrossed) {
       return alert;
@@ -193,8 +192,7 @@ export function formatAlertMessage(alert: PriceAlert, quote: Quote): string {
   const currentFormatted = formatPrice(quote.price);
   const changeFormatted = formatChangePercent(quote.changePercent);
 
-  let msg =
-    `Price alert: ${alert.symbol} has crossed ${directionWord} ` +
+  let msg = `Price alert: ${alert.symbol} has crossed ${directionWord} ` +
     `${targetFormatted}, now at ${currentFormatted} (${changeFormatted} today).`;
 
   if (alert.message.trim().length > 0) {

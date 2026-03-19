@@ -24,10 +24,7 @@
  * @module stocks-interface/capabilities/alert-set
  */
 
-import {
-  createAlert,
-  deleteAlert,
-} from "../sync/alerts.ts";
+import { createAlert, deleteAlert } from "../sync/alerts.ts";
 import type { PriceAlert, ToolState } from "../finnhub/types.ts";
 import type { CapabilityResult } from "./stock-quote.ts";
 
@@ -118,17 +115,24 @@ export function handleAlertSet(
   // ── Build confirmation copy ───────────────────────────────────────────────
   const directionWord = params.direction === "above" ? "above" : "below";
   const targetFormatted = formatPrice(params.targetPrice);
-  const displayName = watchlistItem.name !== symbol ? ` (${watchlistItem.name})` : "";
-  const customNote =
-    params.message && params.message.trim().length > 0
-      ? ` Note: "${params.message.trim()}".`
-      : "";
+  const displayName = watchlistItem.name !== symbol
+    ? ` (${watchlistItem.name})`
+    : "";
+  const customNote = params.message && params.message.trim().length > 0
+    ? ` Note: "${params.message.trim()}".`
+    : "";
 
   const text =
     `Alert set: notify me when ${symbol}${displayName} crosses ${directionWord} ` +
     `${targetFormatted}.${customNote}`;
 
-  const html = buildAlertSetHtml(symbol, watchlistItem.name, params.direction, params.targetPrice, params.message ?? "");
+  const html = buildAlertSetHtml(
+    symbol,
+    watchlistItem.name,
+    params.direction,
+    params.targetPrice,
+    params.message ?? "",
+  );
 
   return { result: { text, html }, updatedState };
 }
@@ -178,7 +182,9 @@ export function handleAlertList(
   // ── Build plain-text summary ──────────────────────────────────────────────
   const lines = alerts.map((a) => {
     const status = a.active ? "active" : `triggered ${a.triggeredAt ?? ""}`;
-    return `${a.id.slice(0, 8)} | ${a.symbol} | ${a.direction} ${formatPrice(a.targetPrice)} | created ${formatDate(a.createdAt)} | ${status}`;
+    return `${a.id.slice(0, 8)} | ${a.symbol} | ${a.direction} ${
+      formatPrice(a.targetPrice)
+    } | created ${formatDate(a.createdAt)} | ${status}`;
   });
   const text = `Price alerts (${alerts.length}):\n` + lines.join("\n");
 
@@ -338,14 +344,17 @@ function buildAlertSetHtml(
 ): string {
   const directionWord = direction === "above" ? "above" : "below";
   const directionColor = direction === "above" ? "#15803d" : "#dc2626";
-  const directionBg = direction === "above" ? "rgba(21,128,61,0.08)" : "rgba(220,38,38,0.08)";
-  const noteRow =
-    customNote.trim().length > 0
-      ? `<tr style="border-top:1px solid #f0fdf4">
+  const directionBg = direction === "above"
+    ? "rgba(21,128,61,0.08)"
+    : "rgba(220,38,38,0.08)";
+  const noteRow = customNote.trim().length > 0
+    ? `<tr style="border-top:1px solid #f0fdf4">
            <td style="padding:5px 4px;color:#6b7280;width:120px">Note</td>
-           <td style="padding:5px 4px;font-weight:500">${escapeHtml(customNote.trim())}</td>
+           <td style="padding:5px 4px;font-weight:500">${
+      escapeHtml(customNote.trim())
+    }</td>
          </tr>`
-      : "";
+    : "";
 
   return `
 <div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #bbf7d0;
@@ -369,11 +378,15 @@ function buildAlertSetHtml(
     <tbody>
       <tr style="border-top:1px solid #f0fdf4">
         <td style="padding:5px 4px;color:#6b7280;width:120px">Symbol</td>
-        <td style="padding:5px 4px;font-weight:500">${escapeHtml(symbol)} · ${escapeHtml(displayName)}</td>
+        <td style="padding:5px 4px;font-weight:500">${escapeHtml(symbol)} · ${
+    escapeHtml(displayName)
+  }</td>
       </tr>
       <tr style="border-top:1px solid #f0fdf4">
         <td style="padding:5px 4px;color:#6b7280">Condition</td>
-        <td style="padding:5px 4px;font-weight:500">Price crosses ${escapeHtml(directionWord)} ${escapeHtml(formatPrice(targetPrice))}</td>
+        <td style="padding:5px 4px;font-weight:500">Price crosses ${
+    escapeHtml(directionWord)
+  } ${escapeHtml(formatPrice(targetPrice))}</td>
       </tr>
       ${noteRow}
     </tbody>
@@ -402,16 +415,25 @@ function buildAlertTableRow(alert: PriceAlert): string {
     : `<span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;
            background:rgba(107,114,128,0.10);color:#6b7280">TRIGGERED</span>`;
 
-  const directionColor =
-    alert.direction === "above" ? "#15803d" : "#dc2626";
+  const directionColor = alert.direction === "above" ? "#15803d" : "#dc2626";
 
   return `
     <tr style="border-top:1px solid #f3f4f6;${rowStyle}">
-      <td style="padding:6px 8px;font-family:monospace;font-size:12px">${escapeHtml(alert.id.slice(0, 8))}…</td>
-      <td style="padding:6px 8px;font-weight:600">${escapeHtml(alert.symbol)}</td>
-      <td style="padding:6px 8px;font-weight:500;color:${directionColor}">${escapeHtml(alert.direction)}</td>
-      <td style="padding:6px 8px;text-align:right;font-weight:500">${escapeHtml(formatPrice(alert.targetPrice))}</td>
-      <td style="padding:6px 8px">${escapeHtml(formatDate(alert.createdAt))}</td>
+      <td style="padding:6px 8px;font-family:monospace;font-size:12px">${
+    escapeHtml(alert.id.slice(0, 8))
+  }…</td>
+      <td style="padding:6px 8px;font-weight:600">${
+    escapeHtml(alert.symbol)
+  }</td>
+      <td style="padding:6px 8px;font-weight:500;color:${directionColor}">${
+    escapeHtml(alert.direction)
+  }</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:500">${
+    escapeHtml(formatPrice(alert.targetPrice))
+  }</td>
+      <td style="padding:6px 8px">${
+    escapeHtml(formatDate(alert.createdAt))
+  }</td>
       <td style="padding:6px 8px">${statusBadge}</td>
     </tr>`.trim();
 }
@@ -447,11 +469,15 @@ function buildAlertDeleteHtml(alert: PriceAlert): string {
       </tr>
       <tr style="border-top:1px solid #f3f4f6">
         <td style="padding:5px 4px">Condition</td>
-        <td style="padding:5px 4px">Price ${escapeHtml(directionWord)} ${escapeHtml(formatPrice(alert.targetPrice))}</td>
+        <td style="padding:5px 4px">Price ${escapeHtml(directionWord)} ${
+    escapeHtml(formatPrice(alert.targetPrice))
+  }</td>
       </tr>
       <tr style="border-top:1px solid #f3f4f6">
         <td style="padding:5px 4px">Alert ID</td>
-        <td style="padding:5px 4px;font-family:monospace;font-size:12px">${escapeHtml(alert.id)}</td>
+        <td style="padding:5px 4px;font-family:monospace;font-size:12px">${
+    escapeHtml(alert.id)
+  }</td>
       </tr>
     </tbody>
   </table>

@@ -14,12 +14,12 @@ export { handleStockCompare } from "./stock-compare.ts";
 export { handleStockHistory } from "./stock-history.ts";
 export type { HistoryPeriod } from "./stock-history.ts";
 export { handleStockNews } from "./stock-news.ts";
-export { handleMarketStatus, handleEarningsCalendar } from "./market-status.ts";
+export { handleEarningsCalendar, handleMarketStatus } from "./market-status.ts";
 export { handleWatchlistAdd } from "./watchlist-add.ts";
 export { handleWatchlistRemove } from "./watchlist-remove.ts";
 export {
-  handleAlertSet,
-  handleAlertList,
   handleAlertDelete,
+  handleAlertList,
+  handleAlertSet,
 } from "./alert-set.ts";
-export type { AlertSetParams, AlertDeleteParams } from "./alert-set.ts";
+export type { AlertDeleteParams, AlertSetParams } from "./alert-set.ts";
