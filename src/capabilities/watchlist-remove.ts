@@ -18,8 +18,8 @@
  * @module stocks-interface/capabilities/watchlist-remove
  */
 
-import type { ToolState } from "../finnhub/types.js";
-import type { CapabilityResult } from "./stock-quote.js";
+import type { ToolState } from "../finnhub/types.ts";
+import type { CapabilityResult } from "./stock-quote.ts";
 
 // ---------------------------------------------------------------------------
 // Exported handler

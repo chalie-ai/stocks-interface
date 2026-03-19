@@ -36,10 +36,10 @@
 import {
   FinnhubAuthError,
   FinnhubNetworkError,
-} from "../finnhub/client.js";
-import type { FinnhubClient } from "../finnhub/client.js";
-import type { ToolState, WatchlistItem } from "../finnhub/types.js";
-import type { CapabilityResult } from "./stock-quote.js";
+} from "../finnhub/client.ts";
+import type { FinnhubClient } from "../finnhub/client.ts";
+import type { ToolState, WatchlistItem } from "../finnhub/types.ts";
+import type { CapabilityResult } from "./stock-quote.ts";
 
 // ---------------------------------------------------------------------------
 // Constants

@@ -27,9 +27,9 @@
 import {
   createAlert,
   deleteAlert,
-} from "../sync/alerts.js";
-import type { PriceAlert, ToolState } from "../finnhub/types.js";
-import type { CapabilityResult } from "./stock-quote.js";
+} from "../sync/alerts.ts";
+import type { PriceAlert, ToolState } from "../finnhub/types.ts";
+import type { CapabilityResult } from "./stock-quote.ts";
 
 // ---------------------------------------------------------------------------
 // handleAlertSet
