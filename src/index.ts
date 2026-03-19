@@ -3,18 +3,18 @@
  * @description Main daemon entry point for the stocks-interface Chalie tool.
  *
  * Implements the Chalie tool IPC contract:
- *  1. Reads a base64-encoded JSON payload from `process.argv[2]`.
+ *  1. Reads a base64-encoded JSON payload from `Deno.args[0]`.
  *  2. Parses {@link ToolInput} (params, settings, telemetry).
  *  3. Loads persisted {@link ToolState} from disk via {@link loadState}.
  *  4. Resolves the Finnhub API key (`settings.apiKey` overrides `state.apiKey`).
  *  5. Shows the setup wizard HTML if no API key is available.
  *  6. Dispatches to the correct capability handler based on `params.capability`.
  *  7. Persists any mutated state returned by the handler.
- *  8. Writes a JSON result `{ text, html }` to stdout.
+ *  8. Writes a JSON result `{ text, html }` to stdout via `console.log`.
  *  9. Optionally starts the background {@link MarketSync} loop when the
  *     `STOCKS_DAEMON` environment variable equals `"1"`.
  * 10. Handles `SIGINT`/`SIGTERM` for graceful shutdown: stops the sync loop,
- *     flushes state to disk, then calls `process.exit(0)`.
+ *     flushes state to disk, then calls `Deno.exit(0)`.
  *
  * ## Capability dispatch table
  * | `params.capability`   | Handler                   | Mutates state |
@@ -46,19 +46,19 @@ import {
   FinnhubClient,
   FinnhubAuthError,
   FinnhubNetworkError,
-} from "./finnhub/client.js";
-import { getDataDir, loadState, saveState } from "./state.js";
-import { MarketSync } from "./sync/market-sync.js";
-import type { StopFn } from "./sync/market-sync.js";
-import { renderSetupPage } from "./ui/setup.js";
-import { renderMainView } from "./ui/main.js";
-import type { ToolState, WatchlistItem, Quote } from "./finnhub/types.js";
+} from "./finnhub/client.ts";
+import { getDataDir, loadState, saveState } from "./state.ts";
+import { MarketSync } from "./sync/market-sync.ts";
+import type { StopFn } from "./sync/market-sync.ts";
+import { renderSetupPage } from "./ui/setup.ts";
+import { renderMainView } from "./ui/main.ts";
+import type { ToolState, WatchlistItem, Quote } from "./finnhub/types.ts";
 import type {
   CapabilityResult,
   HistoryPeriod,
   AlertSetParams,
   AlertDeleteParams,
-} from "./capabilities/index.js";
+} from "./capabilities/index.ts";
 import {
   handleStockQuote,
   handleStockCompare,
@@ -71,7 +71,7 @@ import {
   handleAlertSet,
   handleAlertList,
   handleAlertDelete,
-} from "./capabilities/index.js";
+} from "./capabilities/index.ts";
 
 // ---------------------------------------------------------------------------
 // Public constants (Chalie tool contract)
@@ -125,7 +125,7 @@ interface ToolTelemetry {
 }
 
 /**
- * Decoded IPC payload received from the Chalie runtime via `process.argv[2]`
+ * Decoded IPC payload received from the Chalie runtime via `Deno.args[0]`
  * (a base64-encoded JSON string).
  *
  * `params.capability` names the handler to invoke; all other `params` keys
@@ -149,7 +149,7 @@ interface ToolInput {
 }
 
 /**
- * JSON shape written to `process.stdout` after each capability dispatch.
+ * JSON shape written to stdout (via `console.log`) after each capability dispatch.
  *
  * `text` is consumed by the Chalie reasoning layer; `html` is rendered in the
  * tool panel. `error` is set only on failure and may be absent on success.
@@ -194,30 +194,32 @@ let daemonDataDir: string | null = null;
 
 /**
  * Serialises a {@link ToolOutput} value as a single-line JSON string and
- * writes it to `process.stdout`, followed by a newline character.
+ * writes it to stdout via `console.log`, which appends a newline character,
+ * preserving the single-line-per-message IPC contract with the Chalie runtime.
  *
  * This is the sole output channel back to the Chalie runtime; all other
- * diagnostic output goes to `process.stderr`.
+ * diagnostic output goes to stderr via `console.error`.
  *
  * @param output - The tool result to serialise and emit.
  */
 function writeOutput(output: ToolOutput): void {
-  process.stdout.write(JSON.stringify(output) + "\n");
+  console.log(JSON.stringify(output));
 }
 
 /**
  * Performs a graceful daemon shutdown:
  *  1. Calls the sync-loop {@link StopFn} (if running) to cancel pending timers.
  *  2. Flushes the current {@link ToolState} to disk via {@link saveState}.
- *  3. Calls `process.exit(code)`.
+ *  3. Calls `Deno.exit(code)`.
  *
  * Any error thrown by `saveState` is swallowed so the process always exits
  * cleanly rather than hanging on a filesystem error at shutdown time.
  *
- * @param code - Exit code forwarded to `process.exit`. Defaults to `0`.
- * @returns `Promise<never>` — this function never resolves normally.
+ * @param code - Exit code forwarded to `Deno.exit`. Defaults to `0`.
+ * @returns `Promise<void>` — `Deno.exit` terminates the process; the promise
+ *   never resolves under normal circumstances.
  */
-async function flushAndExit(code = 0): Promise<never> {
+async function flushAndExit(code = 0): Promise<void> {
   if (stopSync !== null) {
     stopSync();
     stopSync = null;
@@ -232,18 +234,18 @@ async function flushAndExit(code = 0): Promise<never> {
     }
   }
 
-  process.exit(code);
+  Deno.exit(code);
 }
 
 // ---------------------------------------------------------------------------
 // Graceful-shutdown signal handlers
 // ---------------------------------------------------------------------------
 
-process.on("SIGINT", (): void => {
+Deno.addSignalListener("SIGINT", (): void => {
   void flushAndExit(0);
 });
 
-process.on("SIGTERM", (): void => {
+Deno.addSignalListener("SIGTERM", (): void => {
   void flushAndExit(0);
 });
 
@@ -271,14 +273,14 @@ async function main(): Promise<void> {
   daemonDataDir = dataDir;
 
   // ── Step 1: Decode base64-encoded JSON IPC payload ───────────────────────
-  const rawArg = process.argv[2] ?? "";
+  const rawArg = Deno.args[0] ?? "";
   let input: ToolInput;
   try {
-    const decoded = Buffer.from(rawArg, "base64").toString("utf8");
+    const decoded = atob(rawArg);
     input = JSON.parse(decoded) as ToolInput;
   } catch {
     writeOutput({
-      text: "Invalid IPC payload: expected base64-encoded JSON in process.argv[2].",
+      text: "Invalid IPC payload: expected base64-encoded JSON in Deno.args[0].",
       html: renderSetupPage(),
       error: "Failed to decode or parse the base64 IPC payload.",
     });
@@ -326,7 +328,7 @@ async function main(): Promise<void> {
   // Only started when STOCKS_DAEMON=1 is set in the environment, indicating
   // the process is a long-lived daemon rather than a single-shot invocation.
   // In single-shot mode the process exits immediately after writing the result.
-  if (process.env["STOCKS_DAEMON"] === "1") {
+  if (Deno.env.get("STOCKS_DAEMON") === "1") {
     const sync = new MarketSync();
     stopSync = sync.startSync(
       state,
