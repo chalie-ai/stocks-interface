@@ -347,6 +347,12 @@ async function main(): Promise<void> {
           `[${TOOL_NAME}] market_summary: ${quotes.length} symbol(s) at close`,
         );
       },
+      async () => {
+        // Persist state mutations accumulated during the sync cycle (e.g.
+        // dedup history pruning, lastSyncAt updates, lastKnownMarketState)
+        // so that state survives a daemon restart between cycles.
+        await saveState(daemonDataDir!, daemonState!);
+      },
     );
   }
 

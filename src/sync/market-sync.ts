@@ -618,13 +618,19 @@ export class MarketSync {
    * - `state.lastMarketSummaryDate` — set when the market-close summary fires.
    * - `state.dedupHistory` — pruned and appended on every cycle.
    *
-   * @param state     - Mutable {@link ToolState}. Read and written in place by
-   *                    the sync loop. Callers are responsible for persisting
-   *                    the state after each cycle (e.g. via `saveState`).
-   * @param client    - Configured {@link FinnhubClient} for all Finnhub calls.
-   * @param onSignal  - Invoked once per qualifying, non-deduplicated signal.
-   * @param onSummary - Invoked once per trading day at or after 16:00 ET with
-   *                    the cycle's quote array for all watchlisted symbols.
+   * @param state       - Mutable {@link ToolState}. Read and written in place by
+   *                      the sync loop. Callers are responsible for persisting
+   *                      the state after each cycle (e.g. via `saveState`).
+   * @param client      - Configured {@link FinnhubClient} for all Finnhub calls.
+   * @param onSignal    - Invoked once per qualifying, non-deduplicated signal.
+   * @param onSummary   - Invoked once per trading day at or after 16:00 ET with
+   *                      the cycle's quote array for all watchlisted symbols.
+   * @param onCycleDone - Optional async callback invoked at the end of each
+   *                      successful cycle (after the market-close summary check
+   *                      but before the next cycle is scheduled). Useful for
+   *                      flushing mutated state to disk without blocking signal
+   *                      emission. Errors thrown here propagate to the outer
+   *                      `try/catch` and are logged, not silently swallowed.
    * @returns A {@link StopFn} that cancels all pending timers. Idempotent.
    */
   startSync(
@@ -632,6 +638,7 @@ export class MarketSync {
     client: FinnhubClient,
     onSignal: OnSignalFn,
     onSummary: OnSummaryFn,
+    onCycleDone?: () => Promise<void>,
   ): StopFn {
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -671,15 +678,23 @@ export class MarketSync {
         state.lastKnownMarketState = newMarketState;
 
         // ── Step 2: Fetch quotes for all watchlist symbols ───────────────────
+        //
+        // All quote requests are issued concurrently via Promise.allSettled so
+        // the entire watchlist is fetched in parallel rather than sequentially.
+        // Per-symbol failures are logged and skipped; the cycle continues for
+        // all other symbols whose requests succeeded.
+        const quoteResults = await Promise.allSettled(
+          state.watchlist.map((item) => client.quote(item.symbol)),
+        );
         const quotes: Quote[] = [];
-        for (const item of state.watchlist) {
-          try {
-            const q = await client.quote(item.symbol);
-            quotes.push(q);
-          } catch (err) {
+        for (let i = 0; i < quoteResults.length; i++) {
+          const result = quoteResults[i];
+          if (result.status === "fulfilled") {
+            quotes.push(result.value);
+          } else {
             console.error(
-              `[market-sync] Failed to fetch quote for ${item.symbol}:`,
-              err,
+              `[market-sync] Failed to fetch quote for ${state.watchlist[i].symbol}:`,
+              result.reason,
             );
           }
         }
@@ -726,6 +741,15 @@ export class MarketSync {
         if (summaryDue && (isTransitionFromOpen || isDaemonStart)) {
           state.lastMarketSummaryDate = todayStr;
           onSummary(quotes);
+        }
+
+        // ── Step 6.5: Per-cycle completion hook ──────────────────────────────
+        //
+        // Awaits the optional `onCycleDone` callback so callers can perform
+        // work that must happen after every successful cycle — e.g. persisting
+        // the mutated state to disk before the next cycle begins.
+        if (onCycleDone !== undefined) {
+          await onCycleDone();
         }
       } catch (err) {
         console.error("[market-sync] Unexpected error in sync cycle:", err);
