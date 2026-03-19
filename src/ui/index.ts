@@ -6,13 +6,13 @@
  * UI components rendered via Chalie's terminal interface primitives.
  */
 
-export { renderSetupPage, renderValidatingPage } from "./setup.js";
-export type { SetupError } from "./setup.js";
+export { renderSetupPage, renderValidatingPage } from "./setup.ts";
+export type { SetupError } from "./setup.ts";
 export {
   DEFAULT_WATCHLIST,
   renderWatchlistSection,
   renderEmptyWatchlist,
-} from "./watchlist.js";
-export type { WatchlistItem } from "./watchlist.js";
-export { renderMainView } from "./main.js";
-export type { ViewState } from "./main.js";
+} from "./watchlist.ts";
+export type { WatchlistItem } from "./watchlist.ts";
+export { renderMainView } from "./main.ts";
+export type { ViewState } from "./main.ts";

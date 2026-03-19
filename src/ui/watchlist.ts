@@ -21,7 +21,7 @@
  * @module stocks-interface/ui/watchlist
  */
 
-import type { WatchlistItem, Quote } from "../finnhub/types.js";
+import type { WatchlistItem, Quote } from "../finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Re-export types consumed by callers (avoids forcing them to import types.ts)

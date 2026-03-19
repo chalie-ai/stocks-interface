@@ -23,11 +23,11 @@
  * @module stocks-interface/ui/main
  */
 
-import type { ToolState, Quote } from "../finnhub/types.js";
+import type { ToolState, Quote } from "../finnhub/types.ts";
 import {
   renderWatchlistSection,
   renderEmptyWatchlist,
-} from "./watchlist.js";
+} from "./watchlist.ts";
 
 // ---------------------------------------------------------------------------
 // Public type — ViewState
