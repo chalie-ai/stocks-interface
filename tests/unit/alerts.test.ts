@@ -15,9 +15,15 @@
  * 6. `formatAlertMessage` appends a custom message when one is provided.
  */
 
-import { describe, expect, it } from "vitest";
-import { checkAlerts, formatAlertMessage } from "../../src/sync/alerts.js";
-import type { PriceAlert, Quote, Settings, ToolState } from "../../src/finnhub/types.js";
+import { describe, it } from "jsr:@std/testing/bdd";
+import { expect } from "jsr:@std/expect";
+import { checkAlerts, formatAlertMessage } from "../../src/sync/alerts.ts";
+import type {
+  PriceAlert,
+  Quote,
+  Settings,
+  ToolState,
+} from "../../src/finnhub/types.ts";
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -118,7 +124,11 @@ describe("checkAlerts", () => {
    * the equality edge-case (`>=`).
    */
   it("fires an 'above' alert when price equals the target", () => {
-    const alert = makeAlert({ symbol: "AAPL", targetPrice: 200, direction: "above" });
+    const alert = makeAlert({
+      symbol: "AAPL",
+      targetPrice: 200,
+      direction: "above",
+    });
     const state = makeState([alert]);
     const quotes = new Map([["AAPL", makeQuote("AAPL", 200)]]);
 
@@ -134,7 +144,11 @@ describe("checkAlerts", () => {
    * greater than the target.
    */
   it("fires an 'above' alert when price exceeds the target", () => {
-    const alert = makeAlert({ symbol: "TSLA", targetPrice: 300, direction: "above" });
+    const alert = makeAlert({
+      symbol: "TSLA",
+      targetPrice: 300,
+      direction: "above",
+    });
     const state = makeState([alert]);
     const quotes = new Map([["TSLA", makeQuote("TSLA", 315.75)]]);
 
@@ -149,7 +163,11 @@ describe("checkAlerts", () => {
    * the target, using a strict-below scenario.
    */
   it("fires a 'below' alert when price drops under the target", () => {
-    const alert = makeAlert({ symbol: "MSFT", targetPrice: 400, direction: "below" });
+    const alert = makeAlert({
+      symbol: "MSFT",
+      targetPrice: 400,
+      direction: "below",
+    });
     const state = makeState([alert]);
     const quotes = new Map([["MSFT", makeQuote("MSFT", 395.5)]]);
 
@@ -165,7 +183,11 @@ describe("checkAlerts", () => {
    * below the target — i.e. the threshold has not yet been crossed.
    */
   it("does NOT fire when price is below an 'above' target", () => {
-    const alert = makeAlert({ symbol: "AAPL", targetPrice: 220, direction: "above" });
+    const alert = makeAlert({
+      symbol: "AAPL",
+      targetPrice: 220,
+      direction: "above",
+    });
     const state = makeState([alert]);
     const quotes = new Map([["AAPL", makeQuote("AAPL", 199.99)]]);
 
@@ -179,7 +201,11 @@ describe("checkAlerts", () => {
    * above the target — i.e. the threshold has not yet been crossed downward.
    */
   it("does NOT fire when price is above a 'below' target", () => {
-    const alert = makeAlert({ symbol: "GOOGL", targetPrice: 150, direction: "below" });
+    const alert = makeAlert({
+      symbol: "GOOGL",
+      targetPrice: 150,
+      direction: "below",
+    });
     const state = makeState([alert]);
     const quotes = new Map([["GOOGL", makeQuote("GOOGL", 175)]]);
 
@@ -195,7 +221,11 @@ describe("checkAlerts", () => {
    * The original `state` must remain unmodified (immutability contract).
    */
   it("marks triggered alerts as inactive with a triggeredAt timestamp", () => {
-    const alert = makeAlert({ symbol: "AAPL", targetPrice: 180, direction: "above" });
+    const alert = makeAlert({
+      symbol: "AAPL",
+      targetPrice: 180,
+      direction: "above",
+    });
     const state = makeState([alert]);
     const quotes = new Map([["AAPL", makeQuote("AAPL", 200, 3.5)]]);
 
@@ -246,7 +276,11 @@ describe("checkAlerts", () => {
    * gracefully — no throw, no spurious trigger.
    */
   it("skips alerts for symbols missing from the quotes map", () => {
-    const alert = makeAlert({ symbol: "NVDA", targetPrice: 800, direction: "above" });
+    const alert = makeAlert({
+      symbol: "NVDA",
+      targetPrice: 800,
+      direction: "above",
+    });
     const state = makeState([alert]);
     // No quote for NVDA.
     const quotes = new Map<string, Quote>();

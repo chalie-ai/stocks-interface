@@ -2,7 +2,7 @@
  * @file tests/unit/rate-limiter.test.ts
  * @description Unit tests for {@link RateLimiter} from src/finnhub/rate-limiter.ts.
  *
- * All tests use `vi.useFakeTimers()` so that `Date.now()` and `setTimeout`
+ * All tests use {@link FakeTime} so that `Date.now()` and `setTimeout`
  * are fully controlled without real wall-clock delays.  Fake timers are
  * restored in an `afterEach` hook so individual test failures cannot bleed
  * into subsequent tests.
@@ -18,8 +18,10 @@
  * 4. Window reset — after 60 seconds, `requestsThisMinute` is reset to zero.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { RateLimiter } from "../../src/finnhub/rate-limiter.js";
+import { afterEach, describe, it } from "jsr:@std/testing/bdd";
+import { expect } from "jsr:@std/expect";
+import { FakeTime } from "jsr:@std/testing/time";
+import { RateLimiter } from "../../src/finnhub/rate-limiter.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -40,12 +42,15 @@ const noop = (): Promise<string> => Promise.resolve("ok");
 // ---------------------------------------------------------------------------
 
 describe("RateLimiter", () => {
+  /** Fake-timer instance created inside each test and restored in afterEach. */
+  let time: FakeTime;
+
   /**
    * Restore real timers after every test so that fake-timer state cannot leak
    * across test boundaries when a test throws unexpectedly.
    */
   afterEach(() => {
-    vi.useRealTimers();
+    time.restore();
   });
 
   // -------------------------------------------------------------------------
@@ -63,7 +68,7 @@ describe("RateLimiter", () => {
      *    fast path, filling `requestsThisMinute` to the ceiling.
      *  - Enqueue a 56th priority-1 item — ceiling is now hit, so it enters the
      *    queue and a drain timer is scheduled for the window reset (~60 s).
-     *  - Flush microtasks (`advanceTimersByTimeAsync(0)`) to ensure `.finally()`
+     *  - Flush microtasks (`tick(0)`) to ensure `.finally()`
      *    handlers on the first 55 items have run.
      *  - Assert the 56th has not settled yet.
      *  - Advance fake time by 60 001 ms — the drain timer fires, the window
@@ -71,7 +76,7 @@ describe("RateLimiter", () => {
      *  - Assert the 56th has now settled.
      */
     it("defers the 56th request until the 60-second window resets", async () => {
-      vi.useFakeTimers();
+      time = new FakeTime();
       const limiter = new RateLimiter();
 
       // Fill the ceiling synchronously using priority-1's fast path.
@@ -89,13 +94,13 @@ describe("RateLimiter", () => {
 
       // Flush microtasks so that the .finally() handlers of the first 55
       // dispatches (which call scheduleDrain) have had a chance to run.
-      await vi.advanceTimersByTimeAsync(0);
+      await time.tick(0);
 
       // The 56th should still be pending — drain fires only after 60 s.
       expect(settled).toBe(false);
 
       // Advance past the 60-second window boundary.
-      await vi.advanceTimersByTimeAsync(60_001);
+      await time.tick(60_001);
 
       // Drain fires → window resets → 56th dispatched → promise resolves.
       await p56;
@@ -123,7 +128,7 @@ describe("RateLimiter", () => {
      * before the returned Promises settle.
      */
     it("dispatches priority-1 before priority-4 after window reset", async () => {
-      vi.useFakeTimers();
+      time = new FakeTime();
       const limiter = new RateLimiter();
 
       // Fill to ceiling using priority-1 fast path.
@@ -148,13 +153,13 @@ describe("RateLimiter", () => {
       }, 1);
 
       // Flush microtasks so scheduleDrain from the 55 .finally() handlers runs.
-      await vi.advanceTimersByTimeAsync(0);
+      await time.tick(0);
 
       // Neither should have been dispatched yet.
       expect(order).toHaveLength(0);
 
       // Advance past the window boundary — drain fires, queue drains.
-      await vi.advanceTimersByTimeAsync(60_001);
+      await time.tick(60_001);
       await Promise.all([pLow, pHigh]);
 
       // priority-1 factory must have been called before priority-4.
@@ -184,7 +189,7 @@ describe("RateLimiter", () => {
      *  - Assert consecutive dispatch timestamps differ by ≥ 2 000 ms.
      */
     it("separates consecutive priority-3 dispatches by at least 2 000 ms", async () => {
-      vi.useFakeTimers();
+      time = new FakeTime();
       const limiter = new RateLimiter();
 
       const dispatchTimes: number[] = [];
@@ -195,23 +200,26 @@ describe("RateLimiter", () => {
        *
        * @returns An async factory suitable for {@link RateLimiter.enqueue}.
        */
-      const makeFn = (): (() => Promise<string>) =>
-        () => {
-          dispatchTimes.push(Date.now());
-          return Promise.resolve("ok");
-        };
+      const makeFn = (): () => Promise<string> => () => {
+        dispatchTimes.push(Date.now());
+        return Promise.resolve("ok");
+      };
 
       const p1 = limiter.enqueue(makeFn(), 3);
       const p2 = limiter.enqueue(makeFn(), 3);
       const p3 = limiter.enqueue(makeFn(), 3);
 
       // 10 s is enough for: drain@0ms, drain@2000ms, drain@4000ms.
-      await vi.advanceTimersByTimeAsync(10_000);
+      await time.tick(10_000);
       await Promise.all([p1, p2, p3]);
 
       expect(dispatchTimes).toHaveLength(3);
-      expect(dispatchTimes[1]! - dispatchTimes[0]!).toBeGreaterThanOrEqual(2_000);
-      expect(dispatchTimes[2]! - dispatchTimes[1]!).toBeGreaterThanOrEqual(2_000);
+      expect(dispatchTimes[1]! - dispatchTimes[0]!).toBeGreaterThanOrEqual(
+        2_000,
+      );
+      expect(dispatchTimes[2]! - dispatchTimes[1]!).toBeGreaterThanOrEqual(
+        2_000,
+      );
     });
   });
 
@@ -230,7 +238,7 @@ describe("RateLimiter", () => {
      * point so no new requests are dispatched — the counter stays at 0.
      */
     it("resets requestsThisMinute to 0 after 60 seconds", async () => {
-      vi.useFakeTimers();
+      time = new FakeTime();
       const limiter = new RateLimiter();
 
       // Fill to ceiling.
@@ -240,11 +248,18 @@ describe("RateLimiter", () => {
 
       expect(limiter.requestsThisMinute).toBe(55);
 
-      // Flush microtasks so .finally() handlers schedule the drain timer.
-      await vi.advanceTimersByTimeAsync(0);
+      // Two microtask flush passes are required:
+      //  Pass 1 (`tick(0)`): the `.then(resolve, reject)` handlers from the 55
+      //    dispatched Promises run, scheduling the `.finally` callbacks.
+      //  Pass 2 (`tick(0)`): the `.finally(() => scheduleDrain(0))` handlers run.
+      //    `scheduleDrain` sees the ceiling is still hit and schedules the drain
+      //    timer for the remainder of the 60-second window (~60 000 ms).
+      await time.tick(0);
+      await time.tick(0);
 
-      // Advance past the 60-second window boundary.
-      await vi.advanceTimersByTimeAsync(60_001);
+      // Advance past the 60-second window boundary — the drain timer fires,
+      // drain() calls refreshWindow(), which zeroes requestsThisMinute.
+      await time.tick(60_001);
 
       // refreshWindow() inside drain() should have zeroed the counter.
       expect(limiter.requestsThisMinute).toBe(0);

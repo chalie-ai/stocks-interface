@@ -2,8 +2,8 @@
  * @file tests/unit/market-sync.test.ts
  * @description Unit tests for {@link MarketSync} from src/sync/market-sync.ts.
  *
- * All tests are pure — no network calls, no file I/O.  Fake timers are used
- * throughout so that `setTimeout` and `Date.now()` are fully controlled.
+ * All tests are pure — no network calls, no file I/O.  {@link FakeTime} is
+ * used throughout so that `setTimeout` and `Date.now()` are fully controlled.
  *
  * ## Coverage
  *
@@ -30,18 +30,24 @@
  * @module stocks-interface/tests/unit/market-sync
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MarketSync } from "../../src/sync/market-sync.js";
-import type { Signal } from "../../src/sync/market-sync.js";
+import { afterEach, beforeEach, describe, it } from "jsr:@std/testing/bdd";
+import { expect, fn } from "jsr:@std/expect";
+import { FakeTime } from "jsr:@std/testing/time";
+import { spy } from "jsr:@std/testing/mock";
+import type { Spy } from "jsr:@std/testing/mock";
+import { MarketSync } from "../../src/sync/market-sync.ts";
+import type { Signal } from "../../src/sync/market-sync.ts";
 import type {
-  BasicMetrics,
   MarketStatus,
   Quote,
   Settings,
   ToolState,
   WatchlistItem,
-} from "../../src/finnhub/types.js";
-import type { FinnhubClient, MetricsCacheEntry } from "../../src/finnhub/client.js";
+} from "../../src/finnhub/types.ts";
+import type {
+  FinnhubClient,
+  MetricsCacheEntry,
+} from "../../src/finnhub/client.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -163,13 +169,12 @@ function makeQuote(symbol: string, changePercent: number, price = 100): Quote {
  * A minimal mock of {@link FinnhubClient} that satisfies the interface
  * consumed by {@link MarketSync}.
  *
- * Uses `vi.fn()` so individual tests can inspect call counts and override
- * return values.
+ * Uses {@link Spy} so individual tests can inspect call counts.
  */
 type MockClient = {
   metricsCache: Map<string, MetricsCacheEntry>;
-  quote: ReturnType<typeof vi.fn>;
-  marketStatus: ReturnType<typeof vi.fn>;
+  quote: Spy<unknown, unknown[], unknown>;
+  marketStatus: Spy<unknown, unknown[], unknown>;
 };
 
 /**
@@ -186,49 +191,116 @@ type MockClient = {
 function makeMockClient(quoteResult: Quote, marketIsOpen = true): MockClient {
   return {
     metricsCache: new Map(),
-    quote: vi.fn().mockResolvedValue(quoteResult),
-    marketStatus: vi.fn().mockResolvedValue({
-      exchange: "US",
-      isOpen: marketIsOpen,
-      holiday: null,
-    } as MarketStatus),
+    quote: spy(() => Promise.resolve(quoteResult)),
+    marketStatus: spy(() =>
+      Promise.resolve({
+        exchange: "US",
+        isOpen: marketIsOpen,
+        holiday: null,
+      } as MarketStatus)
+    ),
   };
 }
 
 // ---------------------------------------------------------------------------
-// Sync cycle runner helper
+// Cycle runner helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Starts a {@link MarketSync} loop, advances fake time by 1 ms to fire the
- * initial `setTimeout(fn, 0)` and drain all pending microtasks, then
- * immediately stops the loop.
+ * Starts a {@link MarketSync} cycle and awaits its completion via the
+ * `onCycleDone` hook, then calls `stop()` and returns the collected signals.
  *
- * Requires `vi.useFakeTimers()` to already be active when called.
+ * Using `onCycleDone` rather than a fixed `tick(N)` delay ensures the test
+ * waits for the entire async chain inside `runCycle` to complete — including
+ * the `await client.marketStatus()` and `await Promise.allSettled(quotes)` hops
+ * — before inspecting emitted signals.
+ *
+ * Requires a {@link FakeTime} instance to already be active when called.
  *
  * @param state     - Tool state passed to `startSync`.
  * @param client    - Mock Finnhub client passed to `startSync`.
+ * @param time      - The active {@link FakeTime} instance used to tick timers.
  * @param onSummary - Optional summary callback; defaults to a no-op spy.
  * @returns An array of all {@link Signal} objects emitted during the cycle.
  */
 async function runOneCycle(
   state: ToolState,
   client: MockClient,
-  onSummary: ReturnType<typeof vi.fn> = vi.fn(),
+  time: FakeTime,
+  onSummary: (quotes: Quote[]) => void = () => {},
 ): Promise<Signal[]> {
   const signals: Signal[] = [];
   const sync = new MarketSync();
+
+  // `cycleDone` resolves when `runCycle` calls the `onCycleDone` hook, which
+  // happens after signals have been emitted and the cycle's async work is done.
+  let cycleResolve!: () => void;
+  const cycleDone = new Promise<void>((res) => {
+    cycleResolve = res;
+  });
+
   const stop = sync.startSync(
     state,
     client as unknown as FinnhubClient,
     (s) => signals.push(s),
     onSummary,
+    async () => {
+      cycleResolve();
+    },
   );
-  // The first cycle fires via `setTimeout(fn, 0)`.  Advancing by 1 ms fires
-  // the timer and drains the resulting async chain (quote/status fetches).
-  await vi.advanceTimersByTimeAsync(1);
+
+  // Fire the initial `setTimeout(fn, 0)` that kicks off the first cycle.
+  await time.tick(1);
+  // Wait for `runCycle`'s async chain (marketStatus + allSettled) to complete
+  // and for `onCycleDone` to be called. The event loop processes microtasks
+  // freely while we await this promise.
+  await cycleDone;
+
   stop();
   return signals;
+}
+
+/**
+ * Starts a {@link MarketSync} cycle for the given `sync` instance, writes
+ * emitted signals into `signals`, and waits for cycle completion via the
+ * `onCycleDone` hook.  Returns the `stop` function without calling it, so the
+ * caller can cancel the next-cycle timer explicitly.
+ *
+ * Used by deduplication tests that need to run multiple sequential cycles
+ * against the same `sync` instance while sharing a signal accumulator.
+ *
+ * @param sync     - {@link MarketSync} instance to run.
+ * @param state    - Mutable tool state shared across cycles.
+ * @param client   - Mock Finnhub client.
+ * @param signals  - Shared array to push emitted signals into.
+ * @param time     - The active {@link FakeTime} instance.
+ * @returns        The stop function (not yet called).
+ */
+async function startAndAwaitCycle(
+  sync: MarketSync,
+  state: ToolState,
+  client: MockClient,
+  signals: Signal[],
+  time: FakeTime,
+): Promise<() => void> {
+  let cycleResolve!: () => void;
+  const cycleDone = new Promise<void>((res) => {
+    cycleResolve = res;
+  });
+
+  const stop = sync.startSync(
+    state,
+    client as unknown as FinnhubClient,
+    (s: Signal) => signals.push(s),
+    spy() as unknown as (quotes: Quote[]) => void,
+    async () => {
+      cycleResolve();
+    },
+  );
+
+  await time.tick(1);
+  await cycleDone;
+  return stop;
 }
 
 // ---------------------------------------------------------------------------
@@ -236,20 +308,24 @@ async function runOneCycle(
 // ---------------------------------------------------------------------------
 
 describe("MarketSync", () => {
+  /** Fake-timer instance shared across all tests in this suite. */
+  let time: FakeTime;
+
   /**
    * Install fake timers before every test so that `setTimeout` and `Date.now`
-   * are fully controlled.  Real timers are restored in `afterEach` to prevent
-   * state leaking across test boundaries.
+   * are fully controlled, initialising the clock at midday ET so that
+   * market-close summary logic will not trigger unexpectedly.
    */
   beforeEach(() => {
-    vi.useFakeTimers();
-    // Default: midday ET — market-close summary logic will not trigger because
-    // the market is marked open and no open→closed transition occurs.
-    vi.setSystemTime(MIDDAY_UTC);
+    time = new FakeTime(MIDDAY_UTC);
   });
 
+  /**
+   * Restore real timers after every test to prevent state leaking across
+   * test boundaries.
+   */
   afterEach(() => {
-    vi.useRealTimers();
+    time.restore();
   });
 
   // -------------------------------------------------------------------------
@@ -269,10 +345,12 @@ describe("MarketSync", () => {
       const state = makeState({ watchlist: [item] });
       const client = makeMockClient(makeQuote("AAPL", 1.5));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
       const stockSignals = signals.filter(
-        (s) => s.symbol === "AAPL" && (s.type === "stock_move" || s.type === "stock_alert"),
+        (s) =>
+          s.symbol === "AAPL" &&
+          (s.type === "stock_move" || s.type === "stock_alert"),
       );
       expect(stockSignals).toHaveLength(0);
     });
@@ -288,10 +366,12 @@ describe("MarketSync", () => {
       const state = makeState({ watchlist: [item] });
       const client = makeMockClient(makeQuote("TSLA", -1.0));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
       const stockSignals = signals.filter(
-        (s) => s.symbol === "TSLA" && (s.type === "stock_move" || s.type === "stock_alert"),
+        (s) =>
+          s.symbol === "TSLA" &&
+          (s.type === "stock_move" || s.type === "stock_alert"),
       );
       expect(stockSignals).toHaveLength(0);
     });
@@ -314,7 +394,7 @@ describe("MarketSync", () => {
       const state = makeState({ watchlist: [item] });
       const client = makeMockClient(makeQuote("AAPL", 3));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
       const moves = signals.filter((s) => s.type === "stock_move");
       expect(moves).toHaveLength(1);
@@ -333,12 +413,16 @@ describe("MarketSync", () => {
       const state = makeState({ watchlist: [item] });
       const client = makeMockClient(makeQuote("MSFT", -4.5));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
-      const moves = signals.filter((s) => s.type === "stock_move" && s.symbol === "MSFT");
+      const moves = signals.filter((s) =>
+        s.type === "stock_move" && s.symbol === "MSFT"
+      );
       expect(moves).toHaveLength(1);
       // Exactly at the boundary: no stock_alert should co-fire
-      const alerts = signals.filter((s) => s.type === "stock_alert" && s.symbol === "MSFT");
+      const alerts = signals.filter((s) =>
+        s.type === "stock_alert" && s.symbol === "MSFT"
+      );
       expect(alerts).toHaveLength(0);
     });
   });
@@ -360,14 +444,16 @@ describe("MarketSync", () => {
       const state = makeState({ watchlist: [item] });
       const client = makeMockClient(makeQuote("AAPL", 6));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
       const alerts = signals.filter((s) => s.type === "stock_alert");
       expect(alerts).toHaveLength(1);
       expect(alerts[0]!.symbol).toBe("AAPL");
 
       // stock_move must NOT fire alongside stock_alert (exclusive tiers)
-      const moves = signals.filter((s) => s.type === "stock_move" && s.symbol === "AAPL");
+      const moves = signals.filter((s) =>
+        s.type === "stock_move" && s.symbol === "AAPL"
+      );
       expect(moves).toHaveLength(0);
     });
 
@@ -381,9 +467,11 @@ describe("MarketSync", () => {
       const state = makeState({ watchlist: [item] });
       const client = makeMockClient(makeQuote("NVDA", -8));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
-      const alerts = signals.filter((s) => s.type === "stock_alert" && s.symbol === "NVDA");
+      const alerts = signals.filter((s) =>
+        s.type === "stock_alert" && s.symbol === "NVDA"
+      );
       expect(alerts).toHaveLength(1);
     });
   });
@@ -403,7 +491,7 @@ describe("MarketSync", () => {
       // Deliberately exceed the 5 % alert threshold
       const client = makeMockClient(makeQuote("AAPL", 7));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
       const alert = signals.find((s) => s.type === "stock_alert");
       expect(alert).toBeDefined();
@@ -418,7 +506,7 @@ describe("MarketSync", () => {
       const state = makeState({ watchlist: [item] });
       const client = makeMockClient(makeQuote("MSFT", 3));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
       const move = signals.find((s) => s.type === "stock_move");
       expect(move).toBeDefined();
@@ -437,7 +525,7 @@ describe("MarketSync", () => {
      *
      * Approach:
      *  1. Run cycle 1 at MIDDAY_UTC → signal fires, key recorded in dedupHistory.
-     *  2. Advance fake clock by 1 hour (still within 2-hour window).
+     *  2. Cancel cycle 1's next-timer, then advance fake clock by 1 hour.
      *  3. Run cycle 2 → signal suppressed because key is not yet expired.
      */
     it("suppresses the same stock_alert key within the 2-hour dedup window", async () => {
@@ -446,37 +534,40 @@ describe("MarketSync", () => {
       const client = makeMockClient(makeQuote("AAPL", 6));
 
       const signals: Signal[] = [];
-      const onSignal = (s: Signal): void => { signals.push(s); };
       const sync = new MarketSync();
 
       // ── Cycle 1 at T ───────────────────────────────────────────────────────
-      const stop1 = sync.startSync(
+      const stop1 = await startAndAwaitCycle(
+        sync,
         state,
-        client as unknown as FinnhubClient,
-        onSignal,
-        vi.fn(),
+        client,
+        signals,
+        time,
       );
-      await vi.advanceTimersByTimeAsync(1);
+      // Cancel the next-cycle timer before advancing time, so the loop
+      // doesn't fire spurious cycles during the 1-hour tick.
       stop1();
 
-      const countAfterCycle1 = signals.filter((s) => s.type === "stock_alert").length;
+      const countAfterCycle1 =
+        signals.filter((s) => s.type === "stock_alert").length;
       expect(countAfterCycle1).toBe(1);
 
       // ── Advance 1 hour — within dedup window ───────────────────────────────
-      vi.setSystemTime(MIDDAY_UTC + 60 * 60 * 1_000);
+      await time.tick(60 * 60 * 1_000);
 
       // ── Cycle 2 at T + 1 h ─────────────────────────────────────────────────
-      const stop2 = sync.startSync(
+      const stop2 = await startAndAwaitCycle(
+        sync,
         state,
-        client as unknown as FinnhubClient,
-        onSignal,
-        vi.fn(),
+        client,
+        signals,
+        time,
       );
-      await vi.advanceTimersByTimeAsync(1);
       stop2();
 
       // Still only one stock_alert — the second cycle was suppressed.
-      const countAfterCycle2 = signals.filter((s) => s.type === "stock_alert").length;
+      const countAfterCycle2 =
+        signals.filter((s) => s.type === "stock_alert").length;
       expect(countAfterCycle2).toBe(1);
     });
   });
@@ -492,8 +583,8 @@ describe("MarketSync", () => {
      *
      * Approach:
      *  1. Run cycle 1 at MIDDAY_UTC → signal fires.
-     *  2. Advance fake clock by 3 hours (beyond the 2-hour window).
-     *  3. Run cycle 3 → dedup entry has expired; signal fires again.
+     *  2. Cancel cycle 1's timer, advance fake clock by 3 hours.
+     *  3. Run cycle 2 → dedup entry has expired; signal fires again.
      */
     it("allows the same stock_alert key to fire again after the 2-hour window expires", async () => {
       const item = makeWatchlistItem("TSLA");
@@ -501,32 +592,31 @@ describe("MarketSync", () => {
       const client = makeMockClient(makeQuote("TSLA", 8));
 
       const signals: Signal[] = [];
-      const onSignal = (s: Signal): void => { signals.push(s); };
       const sync = new MarketSync();
 
       // ── Cycle 1 at T ───────────────────────────────────────────────────────
-      const stop1 = sync.startSync(
+      const stop1 = await startAndAwaitCycle(
+        sync,
         state,
-        client as unknown as FinnhubClient,
-        onSignal,
-        vi.fn(),
+        client,
+        signals,
+        time,
       );
-      await vi.advanceTimersByTimeAsync(1);
       stop1();
 
       expect(signals.filter((s) => s.type === "stock_alert")).toHaveLength(1);
 
       // ── Advance 3 hours — beyond the 2-hour TTL ────────────────────────────
-      vi.setSystemTime(MIDDAY_UTC + 3 * 60 * 60 * 1_000);
+      await time.tick(3 * 60 * 60 * 1_000);
 
       // ── Cycle 2 at T + 3 h ─────────────────────────────────────────────────
-      const stop2 = sync.startSync(
+      const stop2 = await startAndAwaitCycle(
+        sync,
         state,
-        client as unknown as FinnhubClient,
-        onSignal,
-        vi.fn(),
+        client,
+        signals,
+        time,
       );
-      await vi.advanceTimersByTimeAsync(1);
       stop2();
 
       // The dedup entry from cycle 1 has expired; signal fires a second time.
@@ -545,31 +635,37 @@ describe("MarketSync", () => {
      *  - `state.lastMarketSummaryDate` is not today's ET date string.
      *  - The market state transitions from `"open"` to a non-open state.
      *
-     * Fixture: fake clock is set to 16:30 EDT (20:30 UTC) on 2026-03-18.
+     * Fixture: fake clock is advanced to 16:30 EDT (20:30 UTC) on 2026-03-18.
      * `state.lastKnownMarketState = "open"`, `marketStatus` returns
      * `isOpen: false`.
      */
     it("calls onSummary once when market transitions from open to closed after 16:00 ET", async () => {
-      // 2026-03-18 16:30 EDT = 2026-03-18 20:30 UTC
-      vi.setSystemTime(AFTER_CLOSE_UTC);
+      // Advance from MIDDAY_UTC (12:00 EDT) to AFTER_CLOSE_UTC (16:30 EDT).
+      await time.tick(AFTER_CLOSE_UTC - MIDDAY_UTC);
 
       const item = makeWatchlistItem("AAPL");
       const state = makeState({
         watchlist: [item],
-        lastKnownMarketState: "open",  // was open before this cycle
-        lastMarketSummaryDate: null,    // no summary yet today
+        lastKnownMarketState: "open", // was open before this cycle
+        lastMarketSummaryDate: null, // no summary yet today
       });
       // Quote with a small change — we don't want threshold signals to
       // interfere with the summary assertion.
       const client = makeMockClient(makeQuote("AAPL", 0.5), false);
 
-      const onSummary = vi.fn();
-      await runOneCycle(state, client, onSummary);
+      // `fn()` from @std/expect creates a mock that sets Symbol.for("@MOCK"),
+      // making it compatible with `toHaveBeenCalledTimes` and `not.toHaveBeenCalled`.
+      // A closure captures the first argument for the post-call assertion.
+      let capturedSummaryArg: unknown;
+      const onSummary = fn((quotes: Quote[]) => {
+        capturedSummaryArg = quotes;
+      }) as (quotes: Quote[]) => void;
+
+      await runOneCycle(state, client, time, onSummary);
 
       expect(onSummary).toHaveBeenCalledTimes(1);
       // onSummary receives the array of fetched quotes as its first argument.
-      const [quotesArg] = onSummary.mock.calls[0]!;
-      expect(Array.isArray(quotesArg)).toBe(true);
+      expect(Array.isArray(capturedSummaryArg)).toBe(true);
     });
 
     /**
@@ -581,18 +677,19 @@ describe("MarketSync", () => {
      * plan (Issue 9).
      */
     it("calls onSummary on daemon start when market is already closed after 16:00 ET", async () => {
-      vi.setSystemTime(AFTER_CLOSE_UTC);
+      // Advance from MIDDAY_UTC (12:00 EDT) to AFTER_CLOSE_UTC (16:30 EDT).
+      await time.tick(AFTER_CLOSE_UTC - MIDDAY_UTC);
 
       const item = makeWatchlistItem("SPY");
       const state = makeState({
         watchlist: [item],
-        lastKnownMarketState: null,   // daemon just started — no prior state
+        lastKnownMarketState: null, // daemon just started — no prior state
         lastMarketSummaryDate: null,
       });
       const client = makeMockClient(makeQuote("SPY", 0.3), false);
 
-      const onSummary = vi.fn();
-      await runOneCycle(state, client, onSummary);
+      const onSummary = fn() as (quotes: Quote[]) => void;
+      await runOneCycle(state, client, time, onSummary);
 
       expect(onSummary).toHaveBeenCalledTimes(1);
     });
@@ -613,7 +710,8 @@ describe("MarketSync", () => {
      * Fixture: `lastMarketSummaryDate = "2026-03-18"` at 16:30 EDT.
      */
     it("does NOT call onSummary when lastMarketSummaryDate already equals today", async () => {
-      vi.setSystemTime(AFTER_CLOSE_UTC);
+      // Advance from MIDDAY_UTC (12:00 EDT) to AFTER_CLOSE_UTC (16:30 EDT).
+      await time.tick(AFTER_CLOSE_UTC - MIDDAY_UTC);
 
       const item = makeWatchlistItem("AAPL");
       const state = makeState({
@@ -623,8 +721,8 @@ describe("MarketSync", () => {
       });
       const client = makeMockClient(makeQuote("AAPL", 0.5), false);
 
-      const onSummary = vi.fn();
-      await runOneCycle(state, client, onSummary);
+      const onSummary = fn() as (quotes: Quote[]) => void;
+      await runOneCycle(state, client, time, onSummary);
 
       expect(onSummary).not.toHaveBeenCalled();
     });
@@ -636,8 +734,10 @@ describe("MarketSync", () => {
      * Fixture: fake clock set to 13:00 EDT (17:00 UTC), market closed.
      */
     it("does NOT call onSummary when ET hour is before 16:00, even on transition", async () => {
-      // 2026-03-18 13:00 EDT = 17:00 UTC — before market close hour
-      vi.setSystemTime(new Date("2026-03-18T17:00:00.000Z").getTime());
+      // Advance from MIDDAY_UTC (16:00 UTC = 12:00 EDT) to 17:00 UTC (13:00 EDT).
+      await time.tick(
+        new Date("2026-03-18T17:00:00.000Z").getTime() - MIDDAY_UTC,
+      );
 
       const item = makeWatchlistItem("AAPL");
       const state = makeState({
@@ -647,8 +747,8 @@ describe("MarketSync", () => {
       });
       const client = makeMockClient(makeQuote("AAPL", 0.5), false);
 
-      const onSummary = vi.fn();
-      await runOneCycle(state, client, onSummary);
+      const onSummary = fn() as (quotes: Quote[]) => void;
+      await runOneCycle(state, client, time, onSummary);
 
       expect(onSummary).not.toHaveBeenCalled();
     });
@@ -676,7 +776,7 @@ describe("MarketSync", () => {
         watchlist: [item],
         settings: { ...DEFAULT_SETTINGS, notableThresholdStock: 2 },
       });
-      const signals1 = await runOneCycle(stateLow, client);
+      const signals1 = await runOneCycle(stateLow, client, time);
       expect(signals1.filter((s) => s.type === "stock_move")).toHaveLength(1);
 
       // ── Raised threshold: threshold = 3.5 %, change = 3 % → no signal ──────
@@ -684,7 +784,7 @@ describe("MarketSync", () => {
         watchlist: [item],
         settings: { ...DEFAULT_SETTINGS, notableThresholdStock: 3.5 },
       });
-      const signals2 = await runOneCycle(stateHigh, client);
+      const signals2 = await runOneCycle(stateHigh, client, time);
       const stockSignals2 = signals2.filter(
         (s) =>
           s.symbol === "AAPL" &&
@@ -710,14 +810,18 @@ describe("MarketSync", () => {
       });
       const client = makeMockClient(makeQuote("MSFT", 3));
 
-      const signals = await runOneCycle(state, client);
+      const signals = await runOneCycle(state, client, time);
 
-      const alerts = signals.filter((s) => s.type === "stock_alert" && s.symbol === "MSFT");
+      const alerts = signals.filter((s) =>
+        s.type === "stock_alert" && s.symbol === "MSFT"
+      );
       expect(alerts).toHaveLength(1);
       expect(alerts[0]!.energy).toBe(0.65);
 
       // stock_move must NOT co-fire
-      const moves = signals.filter((s) => s.type === "stock_move" && s.symbol === "MSFT");
+      const moves = signals.filter((s) =>
+        s.type === "stock_move" && s.symbol === "MSFT"
+      );
       expect(moves).toHaveLength(0);
     });
   });
