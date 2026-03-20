@@ -20,7 +20,7 @@ import {
   createDaemon,
   sendSignal,
   sendMessage,
-} from "jsr:@chalie/interface-sdk@^1.1.0";
+} from "../_sdk/mod.ts";
 
 import { FinnhubClient } from "./src/finnhub/client.ts";
 import { loadState, saveState } from "./src/state.ts";
