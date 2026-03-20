@@ -102,10 +102,6 @@ export function renderSetupPage(error?: SetupError): Block[] {
       "markdown",
     ),
 
-    alert(
-      "You can also type your API key directly in the chat to configure it.",
-      "info",
-    ),
   );
 
   return blocks;
