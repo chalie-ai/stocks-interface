@@ -91,13 +91,16 @@ function startSyncLoop(): void {
     state,
     client,
     (signal) => {
-      void sendSignal("market_data", {
-        type: signal.type,
-        symbol: signal.symbol,
-        name: signal.name,
-        energy: signal.energy,
-        content: signal.content,
-      });
+      void sendSignal(
+        "market_data",
+        signal.content,
+        signal.energy ?? 0.5,
+        {
+          type: signal.type,
+          symbol: signal.symbol,
+          name: signal.name,
+        },
+      );
     },
     (quotes) => {
       const lines = quotes.map((q) =>
