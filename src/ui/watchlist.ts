@@ -49,10 +49,10 @@ const COLOR_NEGATIVE = "#c62828";
 const BG_NEGATIVE = "rgba(198, 40, 40, 0.08)";
 
 /** Neutral / zero-change colour. */
-const COLOR_NEUTRAL = "#555";
+const COLOR_NEUTRAL = "rgba(234,230,242,0.58)";
 
 /** Card border colour for regular stock / ETF items. */
-const CARD_BORDER_STOCK = "rgba(0, 0, 0, 0.10)";
+const CARD_BORDER_STOCK = "rgba(255, 255, 255, 0.10)";
 
 /** Card border colour for index / index-proxy items (teal tint). */
 const CARD_BORDER_INDEX = `${ACCENT}44`;
@@ -61,10 +61,10 @@ const CARD_BORDER_INDEX = `${ACCENT}44`;
 const CARD_BG_INDEX = "rgba(0, 137, 123, 0.05)";
 
 /** Label colour for secondary text (High / Low / Open labels). */
-const LABEL_COLOR = "#888";
+const LABEL_COLOR = "rgba(234,230,242,0.42)";
 
 /** Skeleton shimmer base colour. */
-const SKELETON_BG = "#e8e8e8";
+const SKELETON_BG = "rgba(255,255,255,0.08)";
 
 // ---------------------------------------------------------------------------
 // Public data — default watchlist
@@ -171,7 +171,7 @@ function changeColor(value: number): string {
 function changeBg(value: number): string {
   if (value > 0) return BG_POSITIVE;
   if (value < 0) return BG_NEGATIVE;
-  return "rgba(0,0,0,0.04)";
+  return "rgba(255,255,255,0.04)";
 }
 
 // ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ function changeBg(value: number): string {
  */
 function renderQuoteCard(item: WatchlistItem, quote: Quote): string {
   const border = item.isIndex ? CARD_BORDER_INDEX : CARD_BORDER_STOCK;
-  const bg = item.isIndex ? CARD_BG_INDEX : "#fff";
+  const bg = item.isIndex ? CARD_BG_INDEX : "transparent";
   const displayName = quote.name ?? item.name;
   const pct = quote.changePercent;
   const pctColor = changeColor(pct);
@@ -234,12 +234,12 @@ function renderQuoteCard(item: WatchlistItem, quote: Quote): string {
         <span style="
           font-size: 1rem;
           font-weight: 700;
-          color: #1a1a1a;
+          color: #eae6f2;
           letter-spacing: 0.01em;
         ">${item.symbol}</span>${indexBadge}
         <div style="
           font-size: 0.775rem;
-          color: #666;
+          color: rgba(234,230,242,0.55);
           margin-top: 1px;
           white-space: nowrap;
           overflow: hidden;
@@ -255,13 +255,13 @@ function renderQuoteCard(item: WatchlistItem, quote: Quote): string {
           width: 24px;
           height: 24px;
           border-radius: 6px;
-          border: 1px solid rgba(0,0,0,0.12);
-          background: rgba(0,0,0,0.04);
+          border: 1px solid rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.04);
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 0.75rem;
-          color: #888;
+          color: rgba(234,230,242,0.42);
           cursor: pointer;
         ">&times;</div>
     </div>
@@ -271,7 +271,7 @@ function renderQuoteCard(item: WatchlistItem, quote: Quote): string {
       <span style="
         font-size: 1.35rem;
         font-weight: 700;
-        color: #111;
+        color: #eae6f2;
         font-variant-numeric: tabular-nums;
         letter-spacing: -0.01em;
       ">${formatPrice(quote.price)}</span>
@@ -295,15 +295,15 @@ function renderQuoteCard(item: WatchlistItem, quote: Quote): string {
       font-variant-numeric: tabular-nums;
     ">
       <span>
-        <span style="font-weight: 600; color: #444;">H</span>
+        <span style="font-weight: 600; color: rgba(234,230,242,0.75);">H</span>
         &thinsp;${formatPrice(quote.high)}
       </span>
       <span>
-        <span style="font-weight: 600; color: #444;">L</span>
+        <span style="font-weight: 600; color: rgba(234,230,242,0.75);">L</span>
         &thinsp;${formatPrice(quote.low)}
       </span>
       <span>
-        <span style="font-weight: 600; color: #444;">O</span>
+        <span style="font-weight: 600; color: rgba(234,230,242,0.75);">O</span>
         &thinsp;${formatPrice(quote.open)}
       </span>
     </div>
@@ -325,7 +325,7 @@ function renderQuoteCard(item: WatchlistItem, quote: Quote): string {
  */
 function renderSkeletonCard(item: WatchlistItem): string {
   const border = item.isIndex ? CARD_BORDER_INDEX : CARD_BORDER_STOCK;
-  const bg = item.isIndex ? CARD_BG_INDEX : "#fff";
+  const bg = item.isIndex ? CARD_BG_INDEX : "transparent";
 
   return `<div style="
     background: ${bg};
@@ -343,12 +343,12 @@ function renderSkeletonCard(item: WatchlistItem): string {
         <div style="
           font-size: 1rem;
           font-weight: 700;
-          color: #1a1a1a;
+          color: #eae6f2;
           letter-spacing: 0.01em;
         ">${item.symbol}</div>
         <div style="
           font-size: 0.775rem;
-          color: #999;
+          color: rgba(234,230,242,0.38);
           margin-top: 2px;
         ">${item.name}</div>
       </div>
@@ -437,7 +437,7 @@ export function renderWatchlistSection(
   const loadingBanner = quotes === null
     ? `<div style="
           font-size: 0.8rem;
-          color: #888;
+          color: rgba(234,230,242,0.42);
           margin-bottom: 12px;
           display: flex;
           align-items: center;
@@ -461,7 +461,7 @@ export function renderWatchlistSection(
     <div style="
       font-size: 0.75rem;
       font-weight: 600;
-      color: #333;
+      color: rgba(234,230,242,0.85);
       text-transform: uppercase;
       letter-spacing: 0.07em;
       margin-bottom: 10px;
@@ -505,12 +505,12 @@ export function renderEmptyWatchlist(): string {
     <div style="
       font-size: 0.975rem;
       font-weight: 600;
-      color: #1a1a1a;
+      color: #eae6f2;
       margin-bottom: 8px;
     ">Your watchlist is empty</div>
     <div style="
       font-size: 0.85rem;
-      color: #666;
+      color: rgba(234,230,242,0.55);
       line-height: 1.65;
       max-width: 300px;
       margin: 0 auto;

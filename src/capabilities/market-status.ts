@@ -345,13 +345,13 @@ function classifyMarketPhase(
 function phaseBadge(phase: "open" | "pre" | "after" | "closed"): PhaseBadge {
   switch (phase) {
     case "open":
-      return { label: "Open", background: "#dcfce7", color: "#15803d" };
+      return { label: "Open", background: "rgba(21,128,61,0.15)", color: "#15803d" };
     case "pre":
-      return { label: "Pre-Market", background: "#fef9c3", color: "#92400e" };
+      return { label: "Pre-Market", background: "rgba(146,64,14,0.15)", color: "#92400e" };
     case "after":
-      return { label: "After-Hours", background: "#fef9c3", color: "#92400e" };
+      return { label: "After-Hours", background: "rgba(146,64,14,0.15)", color: "#92400e" };
     case "closed":
-      return { label: "Closed", background: "#f3f4f6", color: "#6b7280" };
+      return { label: "Closed", background: "rgba(255,255,255,0.05)", color: "rgba(234,230,242,0.55)" };
   }
 }
 
@@ -433,7 +433,7 @@ function formatChangePct(pct: number): string {
 function changeColor(value: number): string {
   if (value > 0) return "#16a34a";
   if (value < 0) return "#dc2626";
-  return "#6b7280";
+  return "rgba(234,230,242,0.55)";
 }
 
 /**
@@ -518,7 +518,7 @@ export async function handleMarketStatus(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:520px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     <strong>Error fetching market status:</strong> ${escapeHtml(msg)}
@@ -589,7 +589,7 @@ export async function handleMarketStatus(
   // Holiday banner (only shown when a holiday is active)
   const holidayBanner = holiday !== null
     ? `
-  <div style="background:#fef9c3;border-radius:4px;padding:8px 12px;
+  <div style="background:rgba(146,64,14,0.15);border-radius:4px;padding:8px 12px;
       margin-bottom:12px;font-size:13px;color:#92400e">
     🗓 Market closed for <strong>${escapeHtml(holiday)}</strong>
   </div>`
@@ -601,17 +601,17 @@ export async function handleMarketStatus(
     const name = escapeHtml(INDEX_NAMES[sym] ?? sym);
     if (q === null) {
       return `
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:7px 4px;font-size:13px;color:#374151">${name}</td>
-        <td style="padding:7px 4px;font-size:13px;color:#9ca3af;text-align:right" colspan="2">
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:7px 4px;font-size:13px;color:rgba(234,230,242,0.85)">${name}</td>
+        <td style="padding:7px 4px;font-size:13px;color:rgba(234,230,242,0.38);text-align:right" colspan="2">
           Data unavailable
         </td>
       </tr>`;
     }
     const color = changeColor(q.changePercent);
     return `
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:7px 4px;font-size:13px;color:#374151">${name}</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:7px 4px;font-size:13px;color:rgba(234,230,242,0.85)">${name}</td>
         <td style="padding:7px 4px;font-size:13px;font-weight:600;text-align:right">
           ${formatPrice(q.price)}
         </td>
@@ -625,27 +625,26 @@ export async function handleMarketStatus(
   // Next event footer
   const nextEventHtml = nextEvent
     ? `
-  <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f3f4f6;
-      font-size:12px;color:#6b7280">
+  <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);
+      font-size:12px;color:rgba(234,230,242,0.55)">
     ${escapeHtml(nextEvent.label)}:
-    <strong style="color:#374151">${
+    <strong style="color:rgba(234,230,242,0.85)">${
       escapeHtml(formatEtTime(nextEvent.date))
     }</strong>
-    <span style="color:#9ca3af"> · ${
+    <span style="color:rgba(234,230,242,0.38)"> · ${
       escapeHtml(formatLocalDateTime(nextEvent.date))
     } (local)</span>
   </div>`
     : "";
 
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:520px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:520px;">
 
   <!-- Header: title + phase badge -->
   <div style="display:flex;justify-content:space-between;align-items:center;
       margin-bottom:12px">
-    <span style="font-size:16px;font-weight:700;color:#111827">
+    <span style="font-size:16px;font-weight:700;color:#eae6f2">
       US Market Status
     </span>
     <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;
@@ -655,8 +654,8 @@ export async function handleMarketStatus(
   </div>
 
   <!-- Current ET time -->
-  <div style="font-size:13px;color:#6b7280;margin-bottom:12px">
-    Current time: <strong style="color:#374151">${
+  <div style="font-size:13px;color:rgba(234,230,242,0.55);margin-bottom:12px">
+    Current time: <strong style="color:rgba(234,230,242,0.85)">${
     escapeHtml(etTimeStr)
   } ET</strong>
   </div>
@@ -668,11 +667,11 @@ export async function handleMarketStatus(
     <thead>
       <tr>
         <th style="text-align:left;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:4px">INDEX</th>
+            color:rgba(234,230,242,0.38);padding-bottom:4px">INDEX</th>
         <th style="text-align:right;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:4px">PRICE</th>
+            color:rgba(234,230,242,0.38);padding-bottom:4px">PRICE</th>
         <th style="text-align:right;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:4px">CHANGE</th>
+            color:rgba(234,230,242,0.38);padding-bottom:4px">CHANGE</th>
       </tr>
     </thead>
     <tbody>${indexRows}
@@ -760,7 +759,7 @@ export async function handleEarningsCalendar(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:600px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     <strong>Error fetching earnings calendar:</strong> ${escapeHtml(msg)}
@@ -805,13 +804,12 @@ export async function handleEarningsCalendar(
   // Empty-state card
   if (sorted.length === 0) {
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:600px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08)">
-  <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:12px">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:600px;">
+  <div style="font-size:15px;font-weight:700;color:#eae6f2;margin-bottom:12px">
     ${escapeHtml(heading)}
   </div>
-  <p style="margin:0;font-size:13px;color:#6b7280">
+  <p style="margin:0;font-size:13px;color:rgba(234,230,242,0.55)">
     No earnings scheduled in this window.
   </p>
 </div>`.trim();
@@ -831,21 +829,21 @@ export async function handleEarningsCalendar(
         : "—";
 
       return `
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:8px 6px;font-size:13px;font-weight:600;color:#111827">
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:8px 6px;font-size:13px;font-weight:600;color:#eae6f2">
           ${escapeHtml(e.symbol)}
         </td>
-        <td style="padding:8px 6px;font-size:13px;color:#374151">
+        <td style="padding:8px 6px;font-size:13px;color:rgba(234,230,242,0.85)">
           ${escapeHtml(formatShortDate(e.date))}
         </td>
         <td style="padding:8px 6px;font-size:11px;font-weight:600;white-space:nowrap;
             color:${timingColor}">
           ${escapeHtml(timing)}
         </td>
-        <td style="padding:8px 6px;font-size:13px;color:#374151;text-align:right">
+        <td style="padding:8px 6px;font-size:13px;color:rgba(234,230,242,0.85);text-align:right">
           ${escapeHtml(epsEstStr)}
         </td>
-        <td style="padding:8px 6px;font-size:13px;color:#374151;text-align:right">
+        <td style="padding:8px 6px;font-size:13px;color:rgba(234,230,242,0.85);text-align:right">
           ${escapeHtml(epsActStr)}
         </td>
       </tr>`;
@@ -853,12 +851,11 @@ export async function handleEarningsCalendar(
     .join("");
 
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:600px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:600px;">
 
   <!-- Header -->
-  <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:12px">
+  <div style="font-size:15px;font-weight:700;color:#eae6f2;margin-bottom:12px">
     ${escapeHtml(heading)}
   </div>
 
@@ -867,22 +864,22 @@ export async function handleEarningsCalendar(
     <thead>
       <tr>
         <th style="text-align:left;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:6px">SYMBOL</th>
+            color:rgba(234,230,242,0.38);padding-bottom:6px">SYMBOL</th>
         <th style="text-align:left;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:6px">DATE</th>
+            color:rgba(234,230,242,0.38);padding-bottom:6px">DATE</th>
         <th style="text-align:left;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:6px">TIMING</th>
+            color:rgba(234,230,242,0.38);padding-bottom:6px">TIMING</th>
         <th style="text-align:right;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:6px">EST. EPS</th>
+            color:rgba(234,230,242,0.38);padding-bottom:6px">EST. EPS</th>
         <th style="text-align:right;font-size:11px;font-weight:600;
-            color:#9ca3af;padding-bottom:6px">ACT. EPS</th>
+            color:rgba(234,230,242,0.38);padding-bottom:6px">ACT. EPS</th>
       </tr>
     </thead>
     <tbody>${rows}
     </tbody>
   </table>
 
-  <p style="margin:12px 0 0;font-size:11px;color:#9ca3af">
+  <p style="margin:12px 0 0;font-size:11px;color:rgba(234,230,242,0.38)">
     EPS estimates from Finnhub · Dates in ET · Free-tier data may be incomplete
   </p>
 </div>`.trim();
@@ -936,6 +933,6 @@ function reportTimeColor(
     case "during-hours":
       return "#15803d";
     case "unknown":
-      return "#6b7280";
+      return "rgba(234,230,242,0.55)";
   }
 }

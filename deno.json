@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --allow-net --allow-read --allow-write --allow-env src/index.ts",
-    "check": "deno check src/index.ts",
+    "dev": "deno run --allow-net --allow-read --allow-write --allow-env daemon.ts --gateway=http://127.0.0.1:8081 --port=4001 --data-dir=./data",
+    "check": "deno check daemon.ts",
     "test": "deno test --allow-net --allow-read --allow-write --allow-env tests/",
     "fmt": "deno fmt"
   }

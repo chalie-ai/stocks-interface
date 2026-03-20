@@ -69,7 +69,7 @@ export function handleWatchlistRemove(
   if (itemIndex === -1) {
     const message = `${symbol} is not in your watchlist.`;
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:480px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     ${escapeHtml(message)}
@@ -139,22 +139,21 @@ function buildSuccessHtml(
     } remaining in your watchlist.`;
 
   return `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:480px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:480px;">
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
     <span style="font-size:16px">🗑️</span>
-    <span style="font-size:15px;font-weight:700;color:#374151">
+    <span style="font-size:15px;font-weight:700;color:rgba(234,230,242,0.85)">
       ${escapeHtml(symbol)} removed from watchlist
     </span>
   </div>
 
   <!-- Detail -->
-  <div style="font-size:13px;color:#6b7280;line-height:1.6">
+  <div style="font-size:13px;color:rgba(234,230,242,0.55);line-height:1.6">
     <div>${escapeHtml(name)} is no longer being tracked.</div>
-    <div style="margin-top:4px;color:#9ca3af">${
+    <div style="margin-top:4px;color:rgba(234,230,242,0.38)">${
     escapeHtml(remainingLabel)
   }</div>
   </div>

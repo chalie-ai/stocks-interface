@@ -95,7 +95,7 @@ function formatVolume(volume: number): string {
 function changeColor(value: number): string {
   if (value > 0) return "#16a34a";
   if (value < 0) return "#dc2626";
-  return "#6b7280";
+  return "rgba(234,230,242,0.55)";
 }
 
 /**
@@ -110,9 +110,9 @@ function resolveBadge(
   marketState: ToolState["lastKnownMarketState"],
 ): { label: string; background: string; color: string } {
   if (marketState === "open") {
-    return { label: "Live", background: "#dcfce7", color: "#15803d" };
+    return { label: "Live", background: "rgba(21,128,61,0.15)", color: "#15803d" };
   }
-  return { label: "Delayed", background: "#fef9c3", color: "#92400e" };
+  return { label: "Delayed", background: "rgba(146,64,14,0.15)", color: "#92400e" };
 }
 
 // ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ export async function handleStockQuote(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:480px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     <strong>Error fetching ${symbol}:</strong> ${escapeHtml(msg)}
@@ -197,18 +197,17 @@ export async function handleStockQuote(
 
   // ── HTML card ─────────────────────────────────────────────────────────────
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:480px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:480px">
 
   <!-- Header: symbol + badge -->
   <div style="display:flex;justify-content:space-between;align-items:flex-start;
       margin-bottom:6px">
     <div>
-      <span style="font-size:20px;font-weight:700;color:#111827">${
+      <span style="font-size:20px;font-weight:700;color:#eae6f2">${
     escapeHtml(symbol)
   }</span>
-      <span style="font-size:13px;color:#6b7280;margin-left:8px">${
+      <span style="font-size:13px;color:rgba(234,230,242,0.55);margin-left:8px">${
     escapeHtml(name)
   }</span>
     </div>
@@ -220,7 +219,7 @@ export async function handleStockQuote(
 
   <!-- Price + change -->
   <div style="margin-bottom:14px">
-    <span style="font-size:28px;font-weight:700;color:#111827">
+    <span style="font-size:28px;font-weight:700;color:#eae6f2">
       ${formatPrice(quote.price)}
     </span>
     <span style="font-size:15px;font-weight:600;color:${color};margin-left:8px">
@@ -231,30 +230,30 @@ export async function handleStockQuote(
   </div>
 
   <!-- Detail grid -->
-  <table style="width:100%;border-collapse:collapse;font-size:13px;color:#374151">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;color:rgba(234,230,242,0.85)">
     <tbody>
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:6px 4px;color:#6b7280">Day High</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55)">Day High</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(quote.high)}
         </td>
-        <td style="padding:6px 4px;color:#6b7280;padding-left:20px">Day Low</td>
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55);padding-left:20px">Day Low</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(quote.low)}
         </td>
       </tr>
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:6px 4px;color:#6b7280">Open</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55)">Open</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(quote.open)}
         </td>
-        <td style="padding:6px 4px;color:#6b7280;padding-left:20px">Prev Close</td>
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55);padding-left:20px">Prev Close</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(quote.previousClose)}
         </td>
       </tr>
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:6px 4px;color:#6b7280">Volume</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55)">Volume</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right" colspan="3">
           ${formatVolume(quote.volume)}
         </td>

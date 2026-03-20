@@ -146,7 +146,7 @@ function renderSparklineSvg(
       `xmlns="http://www.w3.org/2000/svg">` +
       `<text x="${SVG_WIDTH / 2}" y="${SVG_HEIGHT / 2}" ` +
       `text-anchor="middle" dominant-baseline="middle" ` +
-      `fill="#9ca3af" font-family="system-ui,sans-serif" font-size="12">` +
+      `fill="rgba(234,230,242,0.38)" font-family="system-ui,sans-serif" font-size="12">` +
       `No data</text></svg>`
     );
   }
@@ -264,7 +264,7 @@ export async function handleStockHistory(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:520px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     <strong>Error fetching ${escapeHtml(symbol)} history:</strong> ${
@@ -284,9 +284,9 @@ export async function handleStockHistory(
     const msg =
       `No price history available for ${symbol} over the selected period (${label}).`;
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
     border-radius:8px;padding:16px;max-width:520px">
-  <p style="margin:0;color:#6b7280;font-size:14px">${escapeHtml(msg)}</p>
+  <p style="margin:0;color:rgba(234,230,242,0.55);font-size:14px">${escapeHtml(msg)}</p>
 </div>`.trim();
     return { text: msg, html };
   }
@@ -317,18 +317,17 @@ export async function handleStockHistory(
 
   // ── HTML card ─────────────────────────────────────────────────────────────
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:520px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:520px">
 
   <!-- Header: symbol + period + return badge -->
   <div style="display:flex;justify-content:space-between;align-items:center;
       margin-bottom:12px">
     <div>
-      <span style="font-size:18px;font-weight:700;color:#111827">
+      <span style="font-size:18px;font-weight:700;color:#eae6f2">
         ${escapeHtml(symbol)}
       </span>
-      <span style="font-size:13px;color:#6b7280;margin-left:8px">
+      <span style="font-size:13px;color:rgba(234,230,242,0.55);margin-left:8px">
         ${escapeHtml(label)}
       </span>
     </div>
@@ -338,36 +337,36 @@ export async function handleStockHistory(
   </div>
 
   <!-- Sparkline -->
-  <div style="margin-bottom:12px;border:1px solid #f3f4f6;border-radius:4px;
-      overflow:hidden;background:#fafafa">
+  <div style="margin-bottom:12px;border:1px solid rgba(255,255,255,0.06);border-radius:4px;
+      overflow:hidden;background:rgba(255,255,255,0.03)">
     ${sparklineSvg}
   </div>
 
   <!-- Stats grid -->
-  <table style="width:100%;border-collapse:collapse;font-size:13px;color:#374151">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;color:rgba(234,230,242,0.85)">
     <tbody>
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:6px 4px;color:#6b7280">Start Price</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55)">Start Price</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(startPrice)}
         </td>
-        <td style="padding:6px 4px;color:#6b7280;padding-left:20px">End Price</td>
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55);padding-left:20px">End Price</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(endPrice)}
         </td>
       </tr>
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:6px 4px;color:#6b7280">Period High</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55)">Period High</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(periodHigh)}
         </td>
-        <td style="padding:6px 4px;color:#6b7280;padding-left:20px">Period Low</td>
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55);padding-left:20px">Period Low</td>
         <td style="padding:6px 4px;font-weight:500;text-align:right">
           ${formatPrice(periodLow)}
         </td>
       </tr>
-      <tr style="border-top:1px solid #f3f4f6">
-        <td style="padding:6px 4px;color:#6b7280">Total Return</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:6px 4px;color:rgba(234,230,242,0.55)">Total Return</td>
         <td style="padding:6px 4px;font-weight:600;color:${returnColor};text-align:right"
             colspan="3">
           ${returnSign}${totalReturn.toFixed(2)}%

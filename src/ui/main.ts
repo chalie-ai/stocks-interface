@@ -54,7 +54,7 @@ const COLOR_POSITIVE = "#2e7d32";
 const COLOR_NEGATIVE = "#c62828";
 
 /** Neutral / zero-change colour (grey). */
-const COLOR_NEUTRAL = "#555";
+const COLOR_NEUTRAL = "rgba(234,230,242,0.58)";
 
 /** Background tint for positive-change badges. */
 const BG_POSITIVE = "rgba(46, 125, 50, 0.10)";
@@ -63,7 +63,7 @@ const BG_POSITIVE = "rgba(46, 125, 50, 0.10)";
 const BG_NEGATIVE = "rgba(198, 40, 40, 0.10)";
 
 /** Skeleton shimmer base colour (light grey). */
-const SKELETON_BG = "#e8e8e8";
+const SKELETON_BG = "rgba(255,255,255,0.08)";
 
 // ---------------------------------------------------------------------------
 // Private helpers — number formatting
@@ -119,7 +119,7 @@ function changeColor(value: number): string {
 function changeBg(value: number): string {
   if (value > 0) return BG_POSITIVE;
   if (value < 0) return BG_NEGATIVE;
-  return "rgba(0,0,0,0.05)";
+  return "rgba(255,255,255,0.05)";
 }
 
 // ---------------------------------------------------------------------------
@@ -160,12 +160,12 @@ function renderIndexPill(
       <div style="
         font-size: 0.8rem;
         font-weight: 700;
-        color: #1a1a1a;
+        color: #eae6f2;
         letter-spacing: 0.02em;
       ">${symbol}</div>
       <div style="
         font-size: 0.72rem;
-        color: #aaa;
+        color: rgba(234,230,242,0.35);
         margin-bottom: 2px;
         white-space: nowrap;
         overflow: hidden;
@@ -193,12 +193,12 @@ function renderIndexPill(
     <div style="
       font-size: 0.8rem;
       font-weight: 700;
-      color: #1a1a1a;
+      color: #eae6f2;
       letter-spacing: 0.02em;
     ">${symbol}</div>
     <div style="
       font-size: 0.72rem;
-      color: #777;
+      color: rgba(234,230,242,0.48);
       margin-bottom: 2px;
       white-space: nowrap;
       overflow: hidden;
@@ -208,7 +208,7 @@ function renderIndexPill(
       <span style="
         font-size: 0.95rem;
         font-weight: 700;
-        color: #111;
+        color: #eae6f2;
         font-variant-numeric: tabular-nums;
         letter-spacing: -0.01em;
       ">${formatPrice(quote.price)}</span>
@@ -262,7 +262,7 @@ function renderIndexSummaryRow(
     <div style="
       font-size: 0.75rem;
       font-weight: 600;
-      color: #333;
+      color: rgba(234,230,242,0.85);
       text-transform: uppercase;
       letter-spacing: 0.07em;
       margin-bottom: 8px;
@@ -307,7 +307,7 @@ function renderAlertsCountBadge(state: ToolState): string {
     align-items: center;
     gap: 8px;
     font-size: 0.82rem;
-    color: #444;
+    color: rgba(234,230,242,0.75);
   ">
     <span style="
       font-size: 0.9rem;
@@ -344,9 +344,9 @@ function renderSuggestedPrompts(): string {
       (p) =>
         `<li style="
         padding: 7px 0;
-        border-bottom: 1px solid rgba(0,0,0,0.06);
+        border-bottom: 1px solid rgba(255,255,255,0.06);
         font-size: 0.85rem;
-        color: #444;
+        color: rgba(234,230,242,0.75);
         font-style: italic;
       ">&ldquo;${p}&rdquo;</li>`,
     )
@@ -359,7 +359,7 @@ function renderSuggestedPrompts(): string {
     <div style="
       font-size: 0.75rem;
       font-weight: 600;
-      color: #888;
+      color: rgba(234,230,242,0.42);
       text-transform: uppercase;
       letter-spacing: 0.07em;
       margin-bottom: 8px;
@@ -368,7 +368,7 @@ function renderSuggestedPrompts(): string {
       list-style: none;
       margin: 0;
       padding: 0;
-      border-top: 1px solid rgba(0,0,0,0.06);
+      border-top: 1px solid rgba(255,255,255,0.06);
     ">
       ${items}
     </ul>
@@ -408,7 +408,7 @@ function renderLoadingView(state: ToolState): string {
       background: rgba(0, 137, 123, 0.06);
       border: 1px solid ${ACCENT}33;
       font-size: 0.83rem;
-      color: #555;
+      color: rgba(234,230,242,0.58);
     ">
       <!-- Pulsing dot (static representation — animation requires inline style only) -->
       <span style="
@@ -488,7 +488,7 @@ function renderErrorView(state: ToolState): string {
         ">Unable to reach Finnhub</div>
         <div style="
           font-size: 0.82rem;
-          color: #555;
+          color: rgba(234,230,242,0.58);
           line-height: 1.55;
         ">
           Last updated: <strong>${lastUpdated}</strong>.
@@ -505,13 +505,13 @@ function renderErrorView(state: ToolState): string {
           width: 30px;
           height: 30px;
           border-radius: 8px;
-          border: 1px solid rgba(0,0,0,0.12);
-          background: rgba(0,0,0,0.04);
+          border: 1px solid rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.04);
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 1rem;
-          color: #888;
+          color: rgba(234,230,242,0.42);
           cursor: pointer;
         "
       >&#9881;</div>
@@ -522,7 +522,7 @@ function renderErrorView(state: ToolState): string {
     <div style="
       margin-top: 10px;
       font-size: 0.78rem;
-      color: #888;
+      color: rgba(234,230,242,0.42);
       text-align: center;
     ">
       Click &#9881; to verify your Finnhub API key, or ask Chalie
@@ -580,7 +580,7 @@ function renderReadyView(state: ToolState, quotes: Map<string, Quote>): string {
   const lastSyncLine = state.lastSyncAt
     ? `<div style="
         font-size: 0.72rem;
-        color: #aaa;
+        color: rgba(234,230,242,0.35);
         text-align: right;
         margin-bottom: 12px;
         font-variant-numeric: tabular-nums;

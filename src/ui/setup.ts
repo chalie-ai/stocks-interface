@@ -142,7 +142,7 @@ function renderErrorBanner(error: SetupError | undefined): string {
  * @returns A CSS colour string suitable for use in `border: ... solid <value>`.
  */
 function inputBorderColor(error: SetupError | undefined): string {
-  if (!error) return "#ccc";
+  if (!error) return "rgba(234,230,242,0.20)";
   return error.type === "service" ? WARNING_COLOR : ERROR_COLOR;
 }
 
@@ -192,11 +192,6 @@ export function renderSetupPage(error?: SetupError): string {
   return `<div style="
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     max-width: 480px;
-    padding: 24px;
-    border-radius: 12px;
-    background: ${CARD_BG};
-    border: 1px solid ${CARD_BORDER};
-    box-sizing: border-box;
   ">
 
     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
@@ -212,10 +207,10 @@ export function renderSetupPage(error?: SetupError): string {
         font-size: 1.3rem;
       ">📈</div>
       <div>
-        <div style="font-size: 1.05rem; font-weight: 700; color: #1a1a1a; line-height: 1.25;">
+        <div style="font-size: 1.05rem; font-weight: 700; color: #eae6f2; line-height: 1.25;">
           Connect to Finnhub
         </div>
-        <div style="font-size: 0.78rem; color: #666; margin-top: 2px;">
+        <div style="font-size: 0.78rem; color: rgba(234,230,242,0.55); margin-top: 2px;">
           Real-time market data for your watchlist
         </div>
       </div>
@@ -225,7 +220,7 @@ export function renderSetupPage(error?: SetupError): string {
 
     <div style="
       font-size: 0.875rem;
-      color: #444;
+      color: rgba(234,230,242,0.75);
       line-height: 1.65;
       margin-bottom: 18px;
     ">
@@ -237,20 +232,20 @@ export function renderSetupPage(error?: SetupError): string {
     <div style="
       font-size: 0.75rem;
       font-weight: 600;
-      color: #333;
+      color: rgba(234,230,242,0.85);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 6px;
     ">Finnhub API Key</div>
 
     <div style="
-      background: #fff;
+      background: transparent;
       border: 1.5px solid ${borderColor};
       border-radius: 8px;
       padding: 10px 14px;
       font-size: 0.875rem;
       font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
-      color: #aaa;
+      color: rgba(234,230,242,0.35);
       margin-bottom: 10px;
       min-height: 42px;
       display: flex;
@@ -260,7 +255,7 @@ export function renderSetupPage(error?: SetupError): string {
       <span>pk_••••••••••••••••••••••••••••••••</span>
     </div>
 
-    <div style="font-size: 0.825rem; color: #555; margin-bottom: 22px;">
+    <div style="font-size: 0.825rem; color: rgba(234,230,242,0.58); margin-bottom: 22px;">
       Don't have a key yet?
       <a
         href="https://finnhub.io/dashboard"
@@ -282,20 +277,20 @@ export function renderSetupPage(error?: SetupError): string {
     <div style="
       margin-top: 16px;
       padding: 10px 13px;
-      background: rgba(0, 0, 0, 0.04);
+      background: rgba(255, 255, 255, 0.04);
       border-radius: 6px;
       font-size: 0.78rem;
-      color: #666;
+      color: rgba(234,230,242,0.55);
       line-height: 1.55;
     ">
       💡 Type
       <span style="
         font-family: 'SF Mono', 'Fira Code', monospace;
         font-size: 0.8rem;
-        background: rgba(0,0,0,0.07);
+        background: rgba(255,255,255,0.07);
         padding: 1px 5px;
         border-radius: 4px;
-        color: #333;
+        color: rgba(234,230,242,0.85);
       ">set api_key YOUR_KEY</span>
       in the chat to configure your key, then ask Chalie to
       &ldquo;show my watchlist&rdquo; to get started.
@@ -323,11 +318,6 @@ export function renderValidatingPage(): string {
   return `<div style="
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     max-width: 480px;
-    padding: 28px 24px;
-    border-radius: 12px;
-    background: ${CARD_BG};
-    border: 1px solid ${CARD_BORDER};
-    box-sizing: border-box;
     text-align: center;
   ">
 
@@ -336,13 +326,13 @@ export function renderValidatingPage(): string {
     <div style="
       font-size: 1.05rem;
       font-weight: 700;
-      color: #1a1a1a;
+      color: #eae6f2;
       margin-bottom: 8px;
     ">Validating API Key…</div>
 
     <div style="
       font-size: 0.875rem;
-      color: #555;
+      color: rgba(234,230,242,0.58);
       line-height: 1.6;
       margin-bottom: 22px;
       max-width: 320px;
@@ -355,7 +345,7 @@ export function renderValidatingPage(): string {
 
     <div style="
       height: 4px;
-      background: #e0e0e0;
+      background: rgba(255,255,255,0.10);
       border-radius: 2px;
       overflow: hidden;
       margin-bottom: 16px;
@@ -383,7 +373,7 @@ export function renderValidatingPage(): string {
       <div style="width: 8px; height: 8px; border-radius: 50%; background: ${ACCENT}44;"></div>
     </div>
 
-    <div style="font-size: 0.78rem; color: #999; letter-spacing: 0.02em;">
+    <div style="font-size: 0.78rem; color: rgba(234,230,242,0.38); letter-spacing: 0.02em;">
       Connecting to api.finnhub.io…
     </div>
 

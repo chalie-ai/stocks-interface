@@ -238,7 +238,7 @@ function buildErrorResult(
   state: ToolState,
 ): { result: CapabilityResult; updatedState: ToolState } {
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:480px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     ${escapeHtml(message)}
@@ -275,9 +275,8 @@ function buildSuccessHtml(
     : "";
 
   return `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #bbf7d0;
-    border-radius:8px;padding:16px;max-width:480px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(21,128,61,0.3);
+    border-radius:8px;padding:16px;max-width:480px;">
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
@@ -289,28 +288,28 @@ function buildSuccessHtml(
   </div>
 
   <!-- Detail rows -->
-  <table style="width:100%;border-collapse:collapse;font-size:13px;color:#374151">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;color:rgba(234,230,242,0.85)">
     <tbody>
-      <tr style="border-top:1px solid #f0fdf4">
-        <td style="padding:5px 4px;color:#6b7280;width:120px">Name</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px 4px;color:rgba(234,230,242,0.55);width:120px">Name</td>
         <td style="padding:5px 4px;font-weight:500">${
     escapeHtml(item.name)
   }</td>
       </tr>
-      <tr style="border-top:1px solid #f0fdf4">
-        <td style="padding:5px 4px;color:#6b7280">Exchange</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px 4px;color:rgba(234,230,242,0.55)">Exchange</td>
         <td style="padding:5px 4px;font-weight:500">${
     escapeHtml(item.exchange)
   }</td>
       </tr>
-      <tr style="border-top:1px solid #f0fdf4">
-        <td style="padding:5px 4px;color:#6b7280">Type</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px 4px;color:rgba(234,230,242,0.55)">Type</td>
         <td style="padding:5px 4px;font-weight:500">${escapeHtml(item.type)}${
     item.isIndex ? " · index thresholds" : ""
   }</td>
       </tr>
-      <tr style="border-top:1px solid #f0fdf4">
-        <td style="padding:5px 4px;color:#6b7280">Watchlist</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px 4px;color:rgba(234,230,242,0.55)">Watchlist</td>
         <td style="padding:5px 4px;font-weight:500">${newSize} / ${maxSize} slots used</td>
       </tr>
     </tbody>

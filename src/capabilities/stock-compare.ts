@@ -122,7 +122,7 @@ function formatPE(pe: number | null | undefined): string {
 function changeColor(value: number): string {
   if (value > 0) return "#16a34a";
   if (value < 0) return "#dc2626";
-  return "#6b7280";
+  return "rgba(234,230,242,0.55)";
 }
 
 /**
@@ -135,9 +135,9 @@ function resolveBadge(
   marketState: ToolState["lastKnownMarketState"],
 ): { label: string; background: string; color: string } {
   if (marketState === "open") {
-    return { label: "Live", background: "#dcfce7", color: "#15803d" };
+    return { label: "Live", background: "rgba(21,128,61,0.15)", color: "#15803d" };
   }
-  return { label: "Delayed", background: "#fef9c3", color: "#92400e" };
+  return { label: "Delayed", background: "rgba(146,64,14,0.15)", color: "#92400e" };
 }
 
 // ---------------------------------------------------------------------------
@@ -156,13 +156,13 @@ function resolveBadge(
  * @returns An HTML `<tr>...</tr>` string.
  */
 function buildTableRow(row: CompareRow, isEven: boolean): string {
-  const rowBg = isEven ? "#f9fafb" : "#fff";
+  const rowBg = isEven ? "rgba(255,255,255,0.03)" : "transparent";
 
   if (row.quote === null) {
     const errMsg = escapeHtml(row.quoteError ?? "Unknown error");
     return `
     <tr style="background:${rowBg}">
-      <td style="padding:8px 10px;font-weight:600;color:#111827">${
+      <td style="padding:8px 10px;font-weight:600;color:#eae6f2">${
       escapeHtml(row.symbol)
     }</td>
       <td style="padding:8px 10px;color:#dc2626;font-size:12px" colspan="5">
@@ -180,14 +180,14 @@ function buildTableRow(row: CompareRow, isEven: boolean): string {
   return `
     <tr style="background:${rowBg}">
       <td style="padding:8px 10px">
-        <span style="font-weight:700;color:#111827">${
+        <span style="font-weight:700;color:#eae6f2">${
     escapeHtml(q.symbol)
   }</span>
         ${
-    name ? `<br><span style="font-size:11px;color:#6b7280">${name}</span>` : ""
+    name ? `<br><span style="font-size:11px;color:rgba(234,230,242,0.55)">${name}</span>` : ""
   }
       </td>
-      <td style="padding:8px 10px;font-weight:600;color:#111827;text-align:right;
+      <td style="padding:8px 10px;font-weight:600;color:#eae6f2;text-align:right;
           white-space:nowrap">
         ${formatPrice(q.price)}
       </td>
@@ -195,11 +195,11 @@ function buildTableRow(row: CompareRow, isEven: boolean): string {
           white-space:nowrap">
         ${formatChangePercent(pct)}
       </td>
-      <td style="padding:8px 10px;font-size:12px;color:#374151;text-align:right;
+      <td style="padding:8px 10px;font-size:12px;color:rgba(234,230,242,0.85);text-align:right;
           white-space:nowrap">
         ${formatPrice(q.low)}&ndash;${formatPrice(q.high)}
       </td>
-      <td style="padding:8px 10px;color:#374151;text-align:right;white-space:nowrap">
+      <td style="padding:8px 10px;color:rgba(234,230,242,0.85);text-align:right;white-space:nowrap">
         ${formatPE(peValue)}
       </td>
     </tr>`.trim();
@@ -337,14 +337,13 @@ export async function handleStockCompare(
     .join("\n");
 
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:680px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:680px">
 
   <!-- Card header -->
   <div style="display:flex;justify-content:space-between;align-items:center;
       margin-bottom:12px">
-    <span style="font-size:15px;font-weight:700;color:#111827">
+    <span style="font-size:15px;font-weight:700;color:#eae6f2">
       Stock Comparison
     </span>
     <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;
@@ -356,17 +355,17 @@ export async function handleStockCompare(
   <!-- Comparison table -->
   <table style="width:100%;border-collapse:collapse;font-size:13px">
     <thead>
-      <tr style="background:#f3f4f6">
-        <th style="padding:8px 10px;text-align:left;font-weight:600;color:#374151;
-            border-bottom:2px solid #e5e7eb">Symbol</th>
-        <th style="padding:8px 10px;text-align:right;font-weight:600;color:#374151;
-            border-bottom:2px solid #e5e7eb">Price</th>
-        <th style="padding:8px 10px;text-align:right;font-weight:600;color:#374151;
-            border-bottom:2px solid #e5e7eb">Change %</th>
-        <th style="padding:8px 10px;text-align:right;font-weight:600;color:#374151;
-            border-bottom:2px solid #e5e7eb">Day Range</th>
-        <th style="padding:8px 10px;text-align:right;font-weight:600;color:#374151;
-            border-bottom:2px solid #e5e7eb">P/E</th>
+      <tr style="background:rgba(255,255,255,0.05)">
+        <th style="padding:8px 10px;text-align:left;font-weight:600;color:rgba(234,230,242,0.85);
+            border-bottom:2px solid rgba(255,255,255,0.08)">Symbol</th>
+        <th style="padding:8px 10px;text-align:right;font-weight:600;color:rgba(234,230,242,0.85);
+            border-bottom:2px solid rgba(255,255,255,0.08)">Price</th>
+        <th style="padding:8px 10px;text-align:right;font-weight:600;color:rgba(234,230,242,0.85);
+            border-bottom:2px solid rgba(255,255,255,0.08)">Change %</th>
+        <th style="padding:8px 10px;text-align:right;font-weight:600;color:rgba(234,230,242,0.85);
+            border-bottom:2px solid rgba(255,255,255,0.08)">Day Range</th>
+        <th style="padding:8px 10px;text-align:right;font-weight:600;color:rgba(234,230,242,0.85);
+            border-bottom:2px solid rgba(255,255,255,0.08)">P/E</th>
       </tr>
     </thead>
     <tbody>
@@ -375,7 +374,7 @@ export async function handleStockCompare(
   </table>
 
   <!-- P/E staleness footnote -->
-  <p style="margin:10px 0 0;font-size:11px;color:#9ca3af">
+  <p style="margin:10px 0 0;font-size:11px;color:rgba(234,230,242,0.38)">
     P/E ratio is sourced from daily-cached metrics (refreshed once per trading
     day) and may be up to 24 hours stale. &ldquo;N/A&rdquo; indicates the metric
     is unavailable for this symbol (e.g. negative earnings, ETFs).

@@ -73,12 +73,7 @@
   },
 
   "output": {
-    "synthesize": false,
-    "card": {
-      "enabled": true,
-      "title": "Market Data",
-      "accent_color": "#00c853"
-    }
+    "synthesize": false
   },
 
   "constraints": {

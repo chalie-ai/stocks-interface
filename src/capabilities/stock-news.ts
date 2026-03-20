@@ -83,22 +83,22 @@ function formatDate(timestamp: number): string {
  * @returns An HTML `<div>…</div>` string representing one news item.
  */
 function renderNewsItem(article: NewsItem, isLast: boolean): string {
-  const borderStyle = isLast ? "" : "border-bottom:1px solid #f3f4f6;";
+  const borderStyle = isLast ? "" : "border-bottom:1px solid rgba(255,255,255,0.06);";
   return `
 <div style="padding:10px 0;${borderStyle}">
   <a href="${escapeHtml(article.url)}"
      target="_blank"
      rel="noopener noreferrer"
-     style="font-size:14px;font-weight:600;color:#1d4ed8;text-decoration:none;
+     style="font-size:14px;font-weight:600;color:#60a5fa;text-decoration:none;
             line-height:1.4;display:block">
     ${escapeHtml(article.headline)}
   </a>
   <div style="margin-top:4px;display:flex;gap:8px;align-items:center">
-    <span style="font-size:12px;color:#6b7280">${
+    <span style="font-size:12px;color:rgba(234,230,242,0.55)">${
     escapeHtml(article.source)
   }</span>
-    <span style="font-size:12px;color:#d1d5db">&bull;</span>
-    <span style="font-size:12px;color:#9ca3af">${
+    <span style="font-size:12px;color:rgba(234,230,242,0.25)">&bull;</span>
+    <span style="font-size:12px;color:rgba(234,230,242,0.38)">${
     formatDate(article.datetime)
   }</span>
   </div>
@@ -166,7 +166,7 @@ export async function handleStockNews(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:520px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     <strong>Error fetching news for ${escapeHtml(symbol)}:</strong> ${
@@ -188,9 +188,9 @@ export async function handleStockNews(
   if (items.length === 0) {
     const msg = `No recent news found for ${symbol} in the last 7 days.`;
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
     border-radius:8px;padding:16px;max-width:520px">
-  <p style="margin:0;color:#6b7280;font-size:14px">${escapeHtml(msg)}</p>
+  <p style="margin:0;color:rgba(234,230,242,0.55);font-size:14px">${escapeHtml(msg)}</p>
 </div>`.trim();
     return { text: msg, html };
   }
@@ -213,17 +213,16 @@ export async function handleStockNews(
   }`;
 
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:520px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:520px">
 
   <!-- Card header -->
   <div style="display:flex;justify-content:space-between;align-items:center;
       margin-bottom:8px">
-    <span style="font-size:15px;font-weight:700;color:#111827">
+    <span style="font-size:15px;font-weight:700;color:#eae6f2">
       Recent News &mdash; ${escapeHtml(symbol)}
     </span>
-    <span style="font-size:12px;color:#9ca3af">${
+    <span style="font-size:12px;color:rgba(234,230,242,0.38)">${
     escapeHtml(articleCountLabel)
   }</span>
   </div>

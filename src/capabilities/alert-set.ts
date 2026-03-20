@@ -173,9 +173,9 @@ export function handleAlertList(
   if (alerts.length === 0) {
     const text = "No active alerts.";
     const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
     border-radius:8px;padding:16px;max-width:560px">
-  <p style="margin:0;color:#6b7280;font-size:14px">No active alerts.</p>
+  <p style="margin:0;color:rgba(234,230,242,0.55);font-size:14px">No active alerts.</p>
 </div>`.trim();
     return { text, html };
   }
@@ -195,25 +195,25 @@ export function handleAlertList(
     .join("\n");
 
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
     border-radius:8px;padding:16px;max-width:680px;overflow-x:auto">
 
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
     <span style="font-size:15px">🔔</span>
-    <span style="font-size:15px;font-weight:700;color:#111827">
+    <span style="font-size:15px;font-weight:700;color:#eae6f2">
       Price Alerts (${alerts.length})
     </span>
   </div>
 
-  <table style="width:100%;border-collapse:collapse;font-size:13px;color:#374151">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;color:rgba(234,230,242,0.85)">
     <thead>
-      <tr style="background:#f9fafb">
-        <th style="padding:7px 8px;text-align:left;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb">ID</th>
-        <th style="padding:7px 8px;text-align:left;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb">Symbol</th>
-        <th style="padding:7px 8px;text-align:left;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb">Direction</th>
-        <th style="padding:7px 8px;text-align:right;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb">Target Price</th>
-        <th style="padding:7px 8px;text-align:left;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb">Created</th>
-        <th style="padding:7px 8px;text-align:left;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb">Status</th>
+      <tr style="background:rgba(255,255,255,0.03)">
+        <th style="padding:7px 8px;text-align:left;font-weight:600;color:rgba(234,230,242,0.55);border-bottom:1px solid rgba(255,255,255,0.08)">ID</th>
+        <th style="padding:7px 8px;text-align:left;font-weight:600;color:rgba(234,230,242,0.55);border-bottom:1px solid rgba(255,255,255,0.08)">Symbol</th>
+        <th style="padding:7px 8px;text-align:left;font-weight:600;color:rgba(234,230,242,0.55);border-bottom:1px solid rgba(255,255,255,0.08)">Direction</th>
+        <th style="padding:7px 8px;text-align:right;font-weight:600;color:rgba(234,230,242,0.55);border-bottom:1px solid rgba(255,255,255,0.08)">Target Price</th>
+        <th style="padding:7px 8px;text-align:left;font-weight:600;color:rgba(234,230,242,0.55);border-bottom:1px solid rgba(255,255,255,0.08)">Created</th>
+        <th style="padding:7px 8px;text-align:left;font-weight:600;color:rgba(234,230,242,0.55);border-bottom:1px solid rgba(255,255,255,0.08)">Status</th>
       </tr>
     </thead>
     <tbody>
@@ -313,7 +313,7 @@ function buildErrorResult(
   state: ToolState,
 ): { result: CapabilityResult; updatedState: ToolState } {
   const html = `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #fecaca;
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(220,38,38,0.3);
     border-radius:8px;padding:16px;max-width:480px">
   <p style="margin:0;color:#dc2626;font-size:14px">
     ${escapeHtml(message)}
@@ -349,8 +349,8 @@ function buildAlertSetHtml(
     ? "rgba(21,128,61,0.08)"
     : "rgba(220,38,38,0.08)";
   const noteRow = customNote.trim().length > 0
-    ? `<tr style="border-top:1px solid #f0fdf4">
-           <td style="padding:5px 4px;color:#6b7280;width:120px">Note</td>
+    ? `<tr style="border-top:1px solid rgba(255,255,255,0.06)">
+           <td style="padding:5px 4px;color:rgba(234,230,242,0.55);width:120px">Note</td>
            <td style="padding:5px 4px;font-weight:500">${
       escapeHtml(customNote.trim())
     }</td>
@@ -358,9 +358,8 @@ function buildAlertSetHtml(
     : "";
 
   return `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #bbf7d0;
-    border-radius:8px;padding:16px;max-width:480px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(21,128,61,0.3);
+    border-radius:8px;padding:16px;max-width:480px;">
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
@@ -375,16 +374,16 @@ function buildAlertSetHtml(
   </div>
 
   <!-- Detail rows -->
-  <table style="width:100%;border-collapse:collapse;font-size:13px;color:#374151">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;color:rgba(234,230,242,0.85)">
     <tbody>
-      <tr style="border-top:1px solid #f0fdf4">
-        <td style="padding:5px 4px;color:#6b7280;width:120px">Symbol</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px 4px;color:rgba(234,230,242,0.55);width:120px">Symbol</td>
         <td style="padding:5px 4px;font-weight:500">${escapeHtml(symbol)} · ${
     escapeHtml(displayName)
   }</td>
       </tr>
-      <tr style="border-top:1px solid #f0fdf4">
-        <td style="padding:5px 4px;color:#6b7280">Condition</td>
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px 4px;color:rgba(234,230,242,0.55)">Condition</td>
         <td style="padding:5px 4px;font-weight:500">Price crosses ${
     escapeHtml(directionWord)
   } ${escapeHtml(formatPrice(targetPrice))}</td>
@@ -407,19 +406,19 @@ function buildAlertSetHtml(
 function buildAlertTableRow(alert: PriceAlert): string {
   const isActive = alert.active;
   const rowStyle = isActive
-    ? "color:#374151"
-    : "color:#9ca3af;text-decoration:line-through";
+    ? "color:rgba(234,230,242,0.85)"
+    : "color:rgba(234,230,242,0.38);text-decoration:line-through";
 
   const statusBadge = isActive
     ? `<span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;
            background:rgba(21,128,61,0.10);color:#15803d">ACTIVE</span>`
     : `<span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;
-           background:rgba(107,114,128,0.10);color:#6b7280">TRIGGERED</span>`;
+           background:rgba(107,114,128,0.10);color:rgba(234,230,242,0.55)">TRIGGERED</span>`;
 
   const directionColor = alert.direction === "above" ? "#15803d" : "#dc2626";
 
   return `
-    <tr style="border-top:1px solid #f3f4f6;${rowStyle}">
+    <tr style="border-top:1px solid rgba(255,255,255,0.06);${rowStyle}">
       <td style="padding:6px 8px;font-family:monospace;font-size:12px">${
     escapeHtml(alert.id.slice(0, 8))
   }…</td>
@@ -449,32 +448,31 @@ function buildAlertDeleteHtml(alert: PriceAlert): string {
   const directionWord = alert.direction === "above" ? "above" : "below";
 
   return `
-<div style="font-family:system-ui,sans-serif;background:#fff;border:1px solid #e5e7eb;
-    border-radius:8px;padding:16px;max-width:480px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+<div style="font-family:system-ui,sans-serif;background:transparent;border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:16px;max-width:480px;">
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
     <span style="font-size:16px">🗑️</span>
-    <span style="font-size:15px;font-weight:700;color:#374151">
+    <span style="font-size:15px;font-weight:700;color:rgba(234,230,242,0.85)">
       Alert deleted
     </span>
   </div>
 
   <!-- Detail rows -->
-  <table style="width:100%;border-collapse:collapse;font-size:13px;color:#6b7280">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;color:rgba(234,230,242,0.55)">
     <tbody>
-      <tr style="border-top:1px solid #f3f4f6">
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
         <td style="padding:5px 4px;width:120px">Symbol</td>
         <td style="padding:5px 4px">${escapeHtml(alert.symbol)}</td>
       </tr>
-      <tr style="border-top:1px solid #f3f4f6">
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
         <td style="padding:5px 4px">Condition</td>
         <td style="padding:5px 4px">Price ${escapeHtml(directionWord)} ${
     escapeHtml(formatPrice(alert.targetPrice))
   }</td>
       </tr>
-      <tr style="border-top:1px solid #f3f4f6">
+      <tr style="border-top:1px solid rgba(255,255,255,0.06)">
         <td style="padding:5px 4px">Alert ID</td>
         <td style="padding:5px 4px;font-family:monospace;font-size:12px">${
     escapeHtml(alert.id)
