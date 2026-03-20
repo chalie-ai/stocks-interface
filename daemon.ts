@@ -28,6 +28,7 @@ import { MarketSync } from "./src/sync/market-sync.ts";
 import type { StopFn } from "./src/sync/market-sync.ts";
 import { renderMainView } from "./src/ui/main.ts";
 import { renderSetupPage } from "./src/ui/setup.ts";
+import type { Block } from "../_sdk/blocks.ts";
 import type { ToolState, WatchlistItem, Quote } from "./src/finnhub/types.ts";
 import type {
   AlertDeleteParams,
@@ -300,6 +301,51 @@ createDaemon({
   polls: [],
 
   async executeCommand(capability: string, params: Record<string, unknown>) {
+    // Setup capability — validate and save API key (no client required)
+    if (capability === "_setup_save_key") {
+      const apiKey = ((params.api_key as string) ?? "").trim();
+      if (!apiKey) {
+        return {
+          text: null,
+          data: null,
+          blocks: renderSetupPage({ type: "auth", message: "No key provided" }),
+        };
+      }
+
+      const testClient = new FinnhubClient(apiKey);
+      try {
+        await testClient.quote("AAPL");
+        // Valid key — persist and switch to main view
+        state.apiKey = apiKey;
+        await saveState(dataDir, state);
+        client = testClient;
+        startSyncLoop();
+        return {
+          text: "Connected to Finnhub!",
+          data: null,
+          blocks: renderMainView(state, null, "loading"),
+        };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("401") || msg.toLowerCase().includes("unauthorized")) {
+          return {
+            text: null,
+            data: null,
+            blocks: renderSetupPage({ type: "auth", message: msg }),
+          };
+        }
+        // Network / service error — save key optimistically
+        state.apiKey = apiKey;
+        await saveState(dataDir, state);
+        client = testClient;
+        return {
+          text: null,
+          data: null,
+          blocks: renderSetupPage({ type: "service", message: msg }),
+        };
+      }
+    }
+
     // Ensure client is initialised (API key may have been set via meta since startup)
     if (!client) {
       state = await loadState(dataDir);
@@ -441,7 +487,7 @@ createDaemon({
     }
   },
 
-  async renderInterface() {
+  async renderInterface(): Promise<Block[]> {
     state = await loadState(dataDir);
 
     if (!state.apiKey) {
